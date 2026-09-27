@@ -1,0 +1,9 @@
+{
+  "name": "autolabel-report-gen",
+  "private": true,
+  "version": "0.1.0",
+  "description": "Generates the interim report .docx from results/ and figures/",
+  "dependencies": {
+    "docx": "^9.7.2"
+  }
+}

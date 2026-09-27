@@ -1,0 +1,87 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Autolabel Review</title>
+<style>
+  :root { --bg:#f6f7f9; --card:#fff; --ink:#1c1e21; --muted:#6b7280; --pass:#16a34a; --review:#d97706; --reject:#dc2626; --line:#e5e7eb; }
+  body { margin:0; font:14px/1.5 -apple-system, "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; background:var(--bg); color:var(--ink); }
+  header { position:sticky; top:0; background:#fff; border-bottom:1px solid var(--line); padding:10px 16px; display:flex; gap:16px; align-items:center; flex-wrap:wrap; z-index:2; }
+  header h1 { font-size:16px; margin:0 12px 0 0; }
+  .pill { padding:2px 8px; border-radius:999px; font-size:12px; color:#fff; }
+  .pass { background:var(--pass);} .review { background:var(--review);} .reject { background:var(--reject);} .na{background:#9ca3af}
+  main { padding:16px; display:grid; gap:12px; grid-template-columns: 1fr; max-width:1200px; margin:0 auto; }
+  .card { background:var(--card); border:1px solid var(--line); border-radius:10px; padding:12px; display:grid; grid-template-columns: 1fr; gap:10px; }
+  @media (min-width: 900px) { .card { grid-template-columns: 520px 1fr; } }
+  .card img { width:100%; border-radius:6px; background:#000; }
+  .meta { color:var(--muted); font-size:12px; display:flex; gap:10px; flex-wrap:wrap; }
+  textarea { width:100%; min-height:80px; font:inherit; padding:8px; border:1px solid var(--line); border-radius:6px; box-sizing:border-box; }
+  .issues { font-size:12px; margin:0; padding-left:16px; }
+  .issues .error { color:var(--reject);} .issues .warning { color:var(--review);} .issues .info { color:var(--muted);}
+  .actions { display:flex; gap:8px; flex-wrap:wrap; }
+  button { padding:6px 12px; border-radius:6px; border:1px solid var(--line); background:#fff; cursor:pointer; font:inherit; }
+  button.primary { background:#2563eb; color:#fff; border-color:#2563eb; }
+  button.danger { background:#fff; color:var(--reject); border-color:var(--reject); }
+  .state { font-size:12px; color:var(--muted); }
+  select, input[type=search] { padding:6px 8px; border:1px solid var(--line); border-radius:6px; font:inherit; }
+  .dec { font-size:12px; } .dec b { color:#2563eb; }
+</style>
+</head>
+<body>
+<header>
+  <h1>Autolabel Review</h1>
+  <span id="stats" class="state"></span>
+  <select id="fVerdict"><option value="">verdict: all</option><option>pass</option><option>review</option><option>reject</option></select>
+  <select id="fReview"><option value="">review: all</option><option>unreviewed</option><option>approved</option><option>edited</option><option>rejected</option></select>
+  <input id="q" type="search" placeholder="search text / clip / type">
+  <button id="export" class="primary">Export approved+pass</button>
+</header>
+<main id="list"></main>
+<script>
+let LABELS = [];
+const $ = s => document.querySelector(s);
+async function load() {
+  LABELS = await (await fetch('/api/labels')).json();
+  const st = await (await fetch('/api/stats')).json();
+  $('#stats').textContent = `${st.labels} labels · verdict ${JSON.stringify(st.verdicts)} · review ${JSON.stringify(st.review)}`;
+  render();
+}
+function render() {
+  const v = $('#fVerdict').value, r = $('#fReview').value, q = $('#q').value.toLowerCase();
+  const rows = LABELS.filter(l => (!v || (l.filter||{}).verdict===v) && (!r || l.review===r) &&
+      (!q || (l.coc+l.clip_id+l.keyframe_type).toLowerCase().includes(q)));
+  $('#list').innerHTML = rows.map(card).join('') || '<p class="state">no labels match</p>';
+}
+function esc(s){return (s||'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));}
+function card(l) {
+  const f = l.filter || {}; const verdict = f.verdict || 'na';
+  const issues = (f.issues||[]).map(i=>`<li class="${i.severity}">${i.code} ${esc(i.message)}</li>`).join('');
+  const dec = f.decisions ? `<div class="dec">lon: <b>${esc((f.decisions.longitudinal||[]).join(', ')||'-')}</b> · lat: <b>${esc((f.decisions.lateral||[]).join(', ')||'-')}</b> · comp: ${esc((f.components||[]).join(', ')||'-')}</div>` : '';
+  const kin = f.kinematics && f.kinematics.heading_change_deg!==undefined ? `Δheading ${f.kinematics.heading_change_deg.toFixed(0)}° · v ${f.kinematics.speed_before.toFixed(1)}→${f.kinematics.speed_end.toFixed(1)} · vmin ${f.kinematics.speed_min_future.toFixed(1)}` : '';
+  const id = `${l.clip_id}__${l.index}`;
+  return `<div class="card" id="c_${id}">
+    <div>${l.sheet?`<img loading="lazy" src="${l.sheet}">`:'<div class="state">(no frames)</div>'}</div>
+    <div>
+      <div class="meta"><span class="pill ${verdict}">${verdict}</span><span>${esc(l.clip_id)} #${l.index}</span><span><b>${esc(l.keyframe_type)}</b></span><span>${esc(l.backend)}</span><span>score ${f.score??'-'}</span><span>${kin}</span><span class="state">${l.review}</span></div>
+      ${dec}
+      <textarea id="t_${id}">${esc(l.coc)}</textarea>
+      <ul class="issues">${issues}</ul>
+      <div class="actions">
+        <button class="primary" onclick="review('${l.clip_id}',${l.index},'approved')">Approve</button>
+        <button onclick="review('${l.clip_id}',${l.index},'edited')">Save edit</button>
+        <button class="danger" onclick="review('${l.clip_id}',${l.index},'rejected')">Reject</button>
+      </div>
+    </div></div>`;
+}
+async function review(clip_id, index, review) {
+  const coc = document.getElementById(`t_${clip_id}__${index}`).value;
+  const r = await (await fetch('/api/review',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({clip_id,index,review,coc})})).json();
+  if (r.ok) { const i = LABELS.findIndex(l=>l.clip_id===clip_id&&l.index===index); LABELS[i] = {...LABELS[i], ...r.label, sheet: LABELS[i].sheet}; render(); }
+}
+$('#export').onclick = async () => { const r = await (await fetch('/api/export',{method:'POST',headers:{'Content-Type':'application/json'},body:'{}'})).json(); alert(`exported ${r.kept} samples to ${r.export_dir}`); };
+['#fVerdict','#fReview'].forEach(s=>$(s).onchange=render); $('#q').oninput=render;
+load();
+</script>
+</body>
+</html>

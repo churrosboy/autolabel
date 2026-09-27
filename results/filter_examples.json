@@ -1,0 +1,1051 @@
+{
+ "filter_gt": {
+  "K01": [
+   {
+    "type": "gentle_decel",
+    "message": "claims stop; ego is decelerating but has not stopped within the window (vmin=7.0)",
+    "coc": "The ego vehicle gently decelerates to stop for static constraints because the traffic light ahead is red.",
+    "kin": {
+     "speed_before": 10.93,
+     "speed_after_2s": 9.71,
+     "speed_end": 7.08,
+     "speed_min_future": 7.04,
+     "speed_max_future": 10.84,
+     "ax_mean_future_2s": -0.58,
+     "ax_min_future": -1.49,
+     "ax_max_future": -0.17,
+     "curv_abs_max_future": 0.04,
+     "heading_change_deg": -9.72,
+     "lateral_offset_m": -0.59,
+     "stopped_frac_future": 0.0,
+     "speed_drop": 3.88,
+     "dist_future_m": 53.99
+    }
+   },
+   {
+    "type": "gentle_decel",
+    "message": "claims stop; ego is decelerating but has not stopped within the window (vmin=7.7)",
+    "coc": "Observing the red traffic light ahead in the initial frames, the ego vehicle initiates a gentle deceleration to stop for static constraints while maintaining lane centering.",
+    "kin": {
+     "speed_before": 9.26,
+     "speed_after_2s": 8.35,
+     "speed_end": 7.91,
+     "speed_min_future": 7.7,
+     "speed_max_future": 9.16,
+     "ax_mean_future_2s": -0.56,
+     "ax_min_future": -2.17,
+     "ax_max_future": 1.3,
+     "curv_abs_max_future": 0.01,
+     "heading_change_deg": -15.73,
+     "lateral_offset_m": -4.1,
+     "stopped_frac_future": 0.0,
+     "speed_drop": 1.57,
+     "dist_future_m": 51.87
+    }
+   },
+   {
+    "type": "gentle_decel",
+    "message": "claims stop; ego is decelerating but has not stopped within the window (vmin=3.7)",
+    "coc": "The ego vehicle executes a gentle deceleration to stop for static constraints due to the red traffic light at the intersection, while making a turn.",
+    "kin": {
+     "speed_before": 3.6,
+     "speed_after_2s": 5.68,
+     "speed_end": 6.3,
+     "speed_min_future": 3.69,
+     "speed_max_future": 7.02,
+     "ax_mean_future_2s": -0.56,
+     "ax_min_future": -1.34,
+     "ax_max_future": 0.57,
+     "curv_abs_max_future": 0.07,
+     "heading_change_deg": -27.95,
+     "lateral_offset_m": -14.38,
+     "stopped_frac_future": 0.0,
+     "speed_drop": -0.09,
+     "dist_future_m": 35.72
+    }
+   },
+   {
+    "type": "gentle_decel",
+    "message": "claims stop; ego is decelerating but has not stopped within the window (vmin=4.4)",
+    "coc": "Because of the stop sign and the stop line painted on the road ahead, the ego vehicle applies a gentle deceleration to stop for the static constraint while maintaining lane keeping and centering.",
+    "kin": {
+     "speed_before": 12.33,
+     "speed_after_2s": 10.87,
+     "speed_end": 4.75,
+     "speed_min_future": 4.41,
+     "speed_max_future": 12.24,
+     "ax_mean_future_2s": -0.62,
+     "ax_min_future": -2.37,
+     "ax_max_future": 0.17,
+     "curv_abs_max_future": 0.0,
+     "heading_change_deg": 0.91,
+     "lateral_offset_m": 0.22,
+     "stopped_frac_future": 0.0,
+     "speed_drop": 7.92,
+     "dist_future_m": 54.9
+    }
+   }
+  ],
+  "T03": [
+   {
+    "type": "strong_accel",
+    "message": "longitudinal decision ['lead obstacle following'] unusual for keyframe 'strong_accel'",
+    "coc": "The ego vehicle executes lead obstacle following due to the lead vehicle.",
+    "kin": {
+     "speed_before": 4.61,
+     "speed_after_2s": 9.52,
+     "speed_end": 11.31,
+     "speed_min_future": 5.08,
+     "speed_max_future": 11.37,
+     "ax_mean_future_2s": 2.15,
+     "ax_min_future": -0.48,
+     "ax_max_future": 3.22,
+     "curv_abs_max_future": 0.02,
+     "heading_change_deg": 4.53,
+     "lateral_offset_m": 1.32,
+     "stopped_frac_future": 0.0,
+     "speed_drop": -0.48,
+     "dist_future_m": 58.04
+    }
+   },
+   {
+    "type": "go_straight",
+    "message": "lateral decision ['out-of-lane nudge'] unusual for keyframe 'go_straight'",
+    "coc": "Because of the static object on the right, the ego vehicle performs an out-of-lane nudge.",
+    "kin": {
+     "speed_before": 5.39,
+     "speed_after_2s": 6.45,
+     "speed_end": 7.57,
+     "speed_min_future": 5.46,
+     "speed_max_future": 7.65,
+     "ax_mean_future_2s": -0.14,
+     "ax_min_future": -1.77,
+     "ax_max_future": 1.96,
+     "curv_abs_max_future": 0.05,
+     "heading_change_deg": -28.51,
+     "lateral_offset_m": -6.68,
+     "stopped_frac_future": 0.0,
+     "speed_drop": -0.07,
+     "dist_future_m": 39.91
+    }
+   },
+   {
+    "type": "gentle_decel",
+    "message": "longitudinal decision ['set speed tracking'] unusual for keyframe 'gentle_decel'",
+    "coc": "The ego vehicle is engaging in set speed tracking because the road ahead is clear of any lead vehicles or immediate obstacles.",
+    "kin": {
+     "speed_before": 10.1,
+     "speed_after_2s": 10.04,
+     "speed_end": 10.15,
+     "speed_min_future": 9.91,
+     "speed_max_future": 10.17,
+     "ax_mean_future_2s": -0.73,
+     "ax_min_future": -1.38,
+     "ax_max_future": 0.45,
+     "curv_abs_max_future": 0.0,
+     "heading_change_deg": 0.7,
+     "lateral_offset_m": 0.42,
+     "stopped_frac_future": 0.0,
+     "speed_drop": 0.19,
+     "dist_future_m": 60.16
+    }
+   },
+   {
+    "type": "steer_r",
+    "message": "lateral decision ['lane keeping & centering'] unusual for keyframe 'steer_r'",
+    "coc": "The ego vehicle executes lane keeping & centering due to the routing intent.",
+    "kin": {
+     "speed_before": 8.25,
+     "speed_after_2s": 8.59,
+     "speed_end": 8.82,
+     "speed_min_future": 8.46,
+     "speed_max_future": 9.35,
+     "ax_mean_future_2s": 1.17,
+     "ax_min_future": -0.49,
+     "ax_max_future": 1.75,
+     "curv_abs_max_future": 0.02,
+     "heading_change_deg": -20.71,
+     "lateral_offset_m": -13.32,
+     "stopped_frac_future": 0.0,
+     "speed_drop": -0.2,
+     "dist_future_m": 53.4
+    }
+   }
+  ],
+  "K05": [
+   {
+    "type": "gentle_decel",
+    "message": "describes slowing but speed only rose (+4.5 m/s)",
+    "coc": "Because the ego vehicle is following a lead vehicle in the left-turn lane at a green light, it applies gentle deceleration to engage in lead obstacle following and execute a turn.",
+    "kin": {
+     "speed_before": 6.88,
+     "speed_after_2s": 7.93,
+     "speed_end": 11.34,
+     "speed_min_future": 6.99,
+     "speed_max_future": 11.52,
+     "ax_mean_future_2s": -1.58,
+     "ax_min_future": -3.67,
+     "ax_max_future": 0.96,
+     "curv_abs_max_future": 0.05,
+     "heading_change_deg": 63.72,
+     "lateral_offset_m": 38.07,
+     "stopped_frac_future": 0.0,
+     "speed_drop": -0.11,
+     "dist_future_m": 53.1
+    }
+   },
+   {
+    "type": "gentle_decel",
+    "message": "describes slowing but speed only rose (+2.7 m/s)",
+    "coc": "The ego vehicle executes a gentle deceleration to stop for static constraints due to the red traffic light at the intersection, while making a turn.",
+    "kin": {
+     "speed_before": 3.6,
+     "speed_after_2s": 5.68,
+     "speed_end": 6.3,
+     "speed_min_future": 3.69,
+     "speed_max_future": 7.02,
+     "ax_mean_future_2s": -0.56,
+     "ax_min_future": -1.34,
+     "ax_max_future": 0.57,
+     "curv_abs_max_future": 0.07,
+     "heading_change_deg": -27.95,
+     "lateral_offset_m": -14.38,
+     "stopped_frac_future": 0.0,
+     "speed_drop": -0.09,
+     "dist_future_m": 35.72
+    }
+   },
+   {
+    "type": "gentle_decel",
+    "message": "describes slowing but speed only rose (+2.2 m/s)",
+    "coc": "The ego vehicle applies gentle deceleration to stop for static constraints at the upcoming stop sign and execute a turn.",
+    "kin": {
+     "speed_before": 7.85,
+     "speed_after_2s": 9.43,
+     "speed_end": 10.04,
+     "speed_min_future": 8.01,
+     "speed_max_future": 10.1,
+     "ax_mean_future_2s": -1.05,
+     "ax_min_future": -4.07,
+     "ax_max_future": 2.48,
+     "curv_abs_max_future": 0.03,
+     "heading_change_deg": -26.58,
+     "lateral_offset_m": -19.63,
+     "stopped_frac_future": 0.0,
+     "speed_drop": -0.17,
+     "dist_future_m": 56.02
+    }
+   },
+   {
+    "type": "gentle_decel",
+    "message": "describes slowing but speed only rose (+5.6 m/s)",
+    "coc": "The ego vehicle decelerates to stop for static constraints at the approaching stop sign in preparation for a right turn.",
+    "kin": {
+     "speed_before": 4.15,
+     "speed_after_2s": 6.51,
+     "speed_end": 9.76,
+     "speed_min_future": 4.29,
+     "speed_max_future": 9.78,
+     "ax_mean_future_2s": -1.1,
+     "ax_min_future": -1.75,
+     "ax_max_future": 0.4,
+     "curv_abs_max_future": 0.13,
+     "heading_change_deg": -55.77,
+     "lateral_offset_m": -32.75,
+     "stopped_frac_future": 0.0,
+     "speed_drop": -0.14,
+     "dist_future_m": 45.38
+    }
+   }
+  ],
+  "S06": [
+   {
+    "type": "go_straight",
+    "message": "more than one decision per category (lon=2, lat=0)",
+    "coc": "Observing a slowing lead vehicle and a red traffic light ahead, the ego vehicle decelerates to a complete stop to maintain a safe following distance and comply with the intersection controls.",
+    "kin": {
+     "speed_before": 5.36,
+     "speed_after_2s": 0.65,
+     "speed_end": 0.0,
+     "speed_min_future": 0.0,
+     "speed_max_future": 4.91,
+     "ax_mean_future_2s": -2.24,
+     "ax_min_future": -2.79,
+     "ax_max_future": 0.28,
+     "curv_abs_max_future": 0.03,
+     "heading_change_deg": 2.13,
+     "lateral_offset_m": 0.14,
+     "stopped_frac_future": 0.62,
+     "speed_drop": 5.36,
+     "dist_future_m": 5.6
+    }
+   },
+   {
+    "type": "gentle_accel",
+    "message": "more than one decision per category (lon=2, lat=1)",
+    "coc": "Since the lead vehicle ahead begins to move forward under a green traffic light, the ego vehicle gently accelerates to maintain lead obstacle following and lane keeping & centering.",
+    "kin": {
+     "speed_before": 6.86,
+     "speed_after_2s": 9.17,
+     "speed_end": 10.65,
+     "speed_min_future": 7.08,
+     "speed_max_future": 10.66,
+     "ax_mean_future_2s": 1.29,
+     "ax_min_future": -0.46,
+     "ax_max_future": 2.1,
+     "curv_abs_max_future": 0.01,
+     "heading_change_deg": 10.55,
+     "lateral_offset_m": 7.24,
+     "stopped_frac_future": 0.0,
+     "speed_drop": -0.22,
+     "dist_future_m": 57.22
+    }
+   },
+   {
+    "type": "gentle_decel",
+    "message": "more than one decision per category (lon=1, lat=2)",
+    "coc": "The ego vehicle gently decelerates to yield to a cut-in vehicle merging from the left adjacent lane, while maintaining lane keeping and centering.",
+    "kin": {
+     "speed_before": 27.39,
+     "speed_after_2s": 26.28,
+     "speed_end": 26.72,
+     "speed_min_future": 25.6,
+     "speed_max_future": 27.3,
+     "ax_mean_future_2s": -0.61,
+     "ax_min_future": -1.1,
+     "ax_max_future": 0.83,
+     "curv_abs_max_future": 0.0,
+     "heading_change_deg": 0.93,
+     "lateral_offset_m": 1.59,
+     "stopped_frac_future": 0.0,
+     "speed_drop": 1.78,
+     "dist_future_m": 157.8
+    }
+   },
+   {
+    "type": "stop",
+    "message": "more than one decision per category (lon=2, lat=0)",
+    "coc": "The ego vehicle executes a lead obstacle following and stop for static constraints decision to halt behind the stopped lead vehicle at the red traffic light.",
+    "kin": {
+     "speed_before": 0.2,
+     "speed_after_2s": 0.0,
+     "speed_end": 0.16,
+     "speed_min_future": 0.0,
+     "speed_max_future": 0.22,
+     "ax_mean_future_2s": 0.01,
+     "ax_min_future": -0.45,
+     "ax_max_future": 0.32,
+     "curv_abs_max_future": 0.0,
+     "heading_change_deg": -0.01,
+     "lateral_offset_m": 0.0,
+     "stopped_frac_future": 1.0,
+     "speed_drop": 0.2,
+     "dist_future_m": 0.17
+    }
+   }
+  ],
+  "T02": [
+   {
+    "type": "go_straight",
+    "message": "no lateral decision although keyframe is lateral ('go_straight')",
+    "coc": "Observing a slowing lead vehicle and a red traffic light ahead, the ego vehicle decelerates to a complete stop to maintain a safe following distance and comply with the intersection controls.",
+    "kin": {
+     "speed_before": 5.36,
+     "speed_after_2s": 0.65,
+     "speed_end": 0.0,
+     "speed_min_future": 0.0,
+     "speed_max_future": 4.91,
+     "ax_mean_future_2s": -2.24,
+     "ax_min_future": -2.79,
+     "ax_max_future": 0.28,
+     "curv_abs_max_future": 0.03,
+     "heading_change_deg": 2.13,
+     "lateral_offset_m": 0.14,
+     "stopped_frac_future": 0.62,
+     "speed_drop": 5.36,
+     "dist_future_m": 5.6
+    }
+   },
+   {
+    "type": "go_straight",
+    "message": "no lateral decision although keyframe is lateral ('go_straight')",
+    "coc": "The ego vehicle decides to yield due to the pedestrians crossing the street.",
+    "kin": {
+     "speed_before": 6.89,
+     "speed_after_2s": 9.96,
+     "speed_end": 6.27,
+     "speed_min_future": 5.77,
+     "speed_max_future": 10.32,
+     "ax_mean_future_2s": -0.59,
+     "ax_min_future": -1.81,
+     "ax_max_future": 1.61,
+     "curv_abs_max_future": 0.03,
+     "heading_change_deg": 5.49,
+     "lateral_offset_m": 5.62,
+     "stopped_frac_future": 0.0,
+     "speed_drop": 1.13,
+     "dist_future_m": 53.51
+    }
+   },
+   {
+    "type": "go_straight",
+    "message": "no lateral decision although keyframe is lateral ('go_straight')",
+    "coc": "Because the ego vehicle is approaching an intersection with a stop sign and intends to go straight, it decides to stop for static constraints.",
+    "kin": {
+     "speed_before": 6.69,
+     "speed_after_2s": 7.88,
+     "speed_end": 7.94,
+     "speed_min_future": 6.73,
+     "speed_max_future": 8.13,
+     "ax_mean_future_2s": -0.51,
+     "ax_min_future": -2.4,
+     "ax_max_future": 1.0,
+     "curv_abs_max_future": 0.04,
+     "heading_change_deg": 10.75,
+     "lateral_offset_m": 6.31,
+     "stopped_frac_future": 0.0,
+     "speed_drop": -0.04,
+     "dist_future_m": 46.08
+    }
+   },
+   {
+    "type": "gentle_decel",
+    "message": "no longitudinal decision although keyframe is longitudinal ('gentle_decel')",
+    "coc": "The ego vehicle executes a gentle deceleration to comply with the static constraint of the upcoming stop sign and road markings, while maintaining lane keeping and centering.",
+    "kin": {
+     "speed_before": 2.97,
+     "speed_after_2s": 0.16,
+     "speed_end": 5.32,
+     "speed_min_future": 0.0,
+     "speed_max_future": 5.64,
+     "ax_mean_future_2s": -1.23,
+     "ax_min_future": -2.22,
+     "ax_max_future": 2.51,
+     "curv_abs_max_future": 0.01,
+     "heading_change_deg": 0.85,
+     "lateral_offset_m": 0.1,
+     "stopped_frac_future": 0.36,
+     "speed_drop": 2.97,
+     "dist_future_m": 9.93
+    }
+   }
+  ],
+  "S08": [
+   {
+    "type": "gentle_decel",
+    "message": "contradictory decisions: 'lane keeping & centering' vs 'merge / split'",
+    "coc": "The ego vehicle gently decelerates to yield to a cut-in vehicle merging from the left adjacent lane, while maintaining lane keeping and centering.",
+    "kin": {
+     "speed_before": 27.39,
+     "speed_after_2s": 26.28,
+     "speed_end": 26.72,
+     "speed_min_future": 25.6,
+     "speed_max_future": 27.3,
+     "ax_mean_future_2s": -0.61,
+     "ax_min_future": -1.1,
+     "ax_max_future": 0.83,
+     "curv_abs_max_future": 0.0,
+     "heading_change_deg": 0.93,
+     "lateral_offset_m": 1.59,
+     "stopped_frac_future": 0.0,
+     "speed_drop": 1.78,
+     "dist_future_m": 157.8
+    }
+   },
+   {
+    "type": "gentle_accel",
+    "message": "contradictory decisions: 'set speed tracking' vs 'stop for static constraints'",
+    "coc": "Because the ego vehicle has completed its stop at the intersection and the path ahead is clear, it engages in set speed tracking and lane keeping & centering to proceed straight.",
+    "kin": {
+     "speed_before": 0.01,
+     "speed_after_2s": 4.38,
+     "speed_end": 9.89,
+     "speed_min_future": 0.07,
+     "speed_max_future": 10.1,
+     "ax_mean_future_2s": 1.98,
+     "ax_min_future": 0.45,
+     "ax_max_future": 2.51,
+     "curv_abs_max_future": 0.01,
+     "heading_change_deg": -0.26,
+     "lateral_offset_m": 0.26,
+     "stopped_frac_future": 0.07,
+     "speed_drop": -0.06,
+     "dist_future_m": 33.85
+    }
+   },
+   {
+    "type": "gentle_accel",
+    "message": "contradictory decisions: 'set speed tracking' vs 'stop for static constraints'",
+    "coc": "Because the ego vehicle has completed its required stop at the intersection and verified that the path is clear of cross traffic, it initiates a gentle acceleration to resume set speed tracking while maintaining lane centering.",
+    "kin": {
+     "speed_before": 0.0,
+     "speed_after_2s": 3.1,
+     "speed_end": 6.67,
+     "speed_min_future": 0.0,
+     "speed_max_future": 6.85,
+     "ax_mean_future_2s": 1.52,
+     "ax_min_future": -0.11,
+     "ax_max_future": 2.26,
+     "curv_abs_max_future": 0.0,
+     "heading_change_deg": -2.07,
+     "lateral_offset_m": -0.34,
+     "stopped_frac_future": 0.05,
+     "speed_drop": 0.0,
+     "dist_future_m": 23.17
+    }
+   },
+   {
+    "type": "gentle_accel",
+    "message": "contradictory decisions: 'lane keeping & centering' vs 'turn'",
+    "coc": "The ego vehicle's decision to engage in lead obstacle following and lane keeping & centering is caused by the traffic light turning green and the lead vehicle ahead beginning to move forward.",
+    "kin": {
+     "speed_before": 0.08,
+     "speed_after_2s": 3.67,
+     "speed_end": 10.34,
+     "speed_min_future": 0.19,
+     "speed_max_future": 10.6,
+     "ax_mean_future_2s": 1.72,
+     "ax_min_future": 0.93,
+     "ax_max_future": 2.35,
+     "curv_abs_max_future": 0.0,
+     "heading_change_deg": -1.16,
+     "lateral_offset_m": -0.7,
+     "stopped_frac_future": 0.03,
+     "speed_drop": -0.11,
+     "dist_future_m": 32.96
+    }
+   }
+  ],
+  "K04": [
+   {
+    "type": "gentle_accel",
+    "message": "claims lane keeping but heading change = 71 deg",
+    "coc": "After waiting for a crossing vehicle to clear the intersection at a green light, the ego vehicle accelerates to proceed straight and resume its target speed.",
+    "kin": {
+     "speed_before": 0.44,
+     "speed_after_2s": 2.99,
+     "speed_end": 4.94,
+     "speed_min_future": 0.7,
+     "speed_max_future": 5.14,
+     "ax_mean_future_2s": 1.15,
+     "ax_min_future": -1.96,
+     "ax_max_future": 1.58,
+     "curv_abs_max_future": 0.12,
+     "heading_change_deg": -71.03,
+     "lateral_offset_m": -7.51,
+     "stopped_frac_future": 0.0,
+     "speed_drop": -0.27,
+     "dist_future_m": 19.5
+    }
+   },
+   {
+    "type": "gentle_accel",
+    "message": "claims lane keeping but heading change = 74 deg",
+    "coc": "Because the intersection is clear of cross traffic after stopping at the stop sign, the ego vehicle gently accelerates to resume set speed tracking and lane keeping.",
+    "kin": {
+     "speed_before": 0.5,
+     "speed_after_2s": 3.59,
+     "speed_end": 5.0,
+     "speed_min_future": 0.55,
+     "speed_max_future": 5.18,
+     "ax_mean_future_2s": 1.53,
+     "ax_min_future": -4.02,
+     "ax_max_future": 2.27,
+     "curv_abs_max_future": 0.11,
+     "heading_change_deg": 73.88,
+     "lateral_offset_m": 7.66,
+     "stopped_frac_future": 0.0,
+     "speed_drop": -0.05,
+     "dist_future_m": 21.45
+    }
+   },
+   {
+    "type": "gentle_accel",
+    "message": "claims lane keeping but heading change = 67 deg",
+    "coc": "Observing that the crossing U-Haul and red pickup truck have cleared the intersection, the ego vehicle initiates a gentle acceleration to resume set speed tracking and lane keeping.",
+    "kin": {
+     "speed_before": 0.05,
+     "speed_after_2s": 2.78,
+     "speed_end": 6.59,
+     "speed_min_future": 0.08,
+     "speed_max_future": 6.64,
+     "ax_mean_future_2s": 1.32,
+     "ax_min_future": -3.55,
+     "ax_max_future": 2.08,
+     "curv_abs_max_future": 0.08,
+     "heading_change_deg": 66.83,
+     "lateral_offset_m": 8.57,
+     "stopped_frac_future": 0.07,
+     "speed_drop": -0.03,
+     "dist_future_m": 22.66
+    }
+   },
+   {
+    "type": "gentle_accel",
+    "message": "claims lane keeping but heading change = 89 deg",
+    "coc": "The ego vehicle's routing intent is to go straight, and the traffic light state is green, which leads to the decision to execute set speed tracking and lane keeping & centering.",
+    "kin": {
+     "speed_before": 1.42,
+     "speed_after_2s": 4.49,
+     "speed_end": 8.53,
+     "speed_min_future": 1.64,
+     "speed_max_future": 8.63,
+     "ax_mean_future_2s": 1.02,
+     "ax_min_future": -2.61,
+     "ax_max_future": 2.27,
+     "curv_abs_max_future": 0.16,
+     "heading_change_deg": 89.11,
+     "lateral_offset_m": 27.4,
+     "stopped_frac_future": 0.0,
+     "speed_drop": -0.22,
+     "dist_future_m": 32.83
+    }
+   }
+  ],
+  "T01": [
+   {
+    "type": "gentle_accel",
+    "message": "decision ['stop for static constraints'] contradicts keyframe type 'gentle_accel'",
+    "coc": "Because the ego vehicle has completed its stop at the intersection and the path ahead is clear, it engages in set speed tracking and lane keeping & centering to proceed straight.",
+    "kin": {
+     "speed_before": 0.01,
+     "speed_after_2s": 4.38,
+     "speed_end": 9.89,
+     "speed_min_future": 0.07,
+     "speed_max_future": 10.1,
+     "ax_mean_future_2s": 1.98,
+     "ax_min_future": 0.45,
+     "ax_max_future": 2.51,
+     "curv_abs_max_future": 0.01,
+     "heading_change_deg": -0.26,
+     "lateral_offset_m": 0.26,
+     "stopped_frac_future": 0.07,
+     "speed_drop": -0.06,
+     "dist_future_m": 33.85
+    }
+   },
+   {
+    "type": "strong_accel",
+    "message": "decision ['yield'] contradicts keyframe type 'strong_accel'",
+    "coc": "After stopping at a stop sign and waiting for an oncoming vehicle to clear the intersection, the ego vehicle accelerates to resume set speed tracking and lane keeping & centering.",
+    "kin": {
+     "speed_before": 0.28,
+     "speed_after_2s": 4.65,
+     "speed_end": 6.42,
+     "speed_min_future": 0.46,
+     "speed_max_future": 6.61,
+     "ax_mean_future_2s": 1.88,
+     "ax_min_future": -0.73,
+     "ax_max_future": 3.4,
+     "curv_abs_max_future": 0.01,
+     "heading_change_deg": 1.34,
+     "lateral_offset_m": -0.16,
+     "stopped_frac_future": 0.0,
+     "speed_drop": -0.18,
+     "dist_future_m": 28.01
+    }
+   },
+   {
+    "type": "gentle_accel",
+    "message": "decision ['stop for static constraints'] contradicts keyframe type 'gentle_accel'",
+    "coc": "Because the ego vehicle has completed its required stop at the intersection and verified that the path is clear of cross traffic, it initiates a gentle acceleration to resume set speed tracking while maintaining lane centering.",
+    "kin": {
+     "speed_before": 0.0,
+     "speed_after_2s": 3.1,
+     "speed_end": 6.67,
+     "speed_min_future": 0.0,
+     "speed_max_future": 6.85,
+     "ax_mean_future_2s": 1.52,
+     "ax_min_future": -0.11,
+     "ax_max_future": 2.26,
+     "curv_abs_max_future": 0.0,
+     "heading_change_deg": -2.07,
+     "lateral_offset_m": -0.34,
+     "stopped_frac_future": 0.05,
+     "speed_drop": 0.0,
+     "dist_future_m": 23.17
+    }
+   },
+   {
+    "type": "gentle_accel",
+    "message": "decision ['stop for static constraints'] contradicts keyframe type 'gentle_accel'",
+    "coc": "Because the ego vehicle has completed its required stop at the intersection and the lead vehicle has cleared the path, it initiates a gentle acceleration to resume set speed tracking while maintaining lane centering.",
+    "kin": {
+     "speed_before": 1.31,
+     "speed_after_2s": 5.89,
+     "speed_end": 9.44,
+     "speed_min_future": 1.28,
+     "speed_max_future": 9.5,
+     "ax_mean_future_2s": 2.32,
+     "ax_min_future": -0.66,
+     "ax_max_future": 3.17,
+     "curv_abs_max_future": 0.0,
+     "heading_change_deg": -0.32,
+     "lateral_offset_m": 0.38,
+     "stopped_frac_future": 0.0,
+     "speed_drop": 0.02,
+     "dist_future_m": 40.46
+    }
+   }
+  ],
+  "S07": [
+   {
+    "type": "steer_l",
+    "message": "no causal connective (because / due to / to ...)",
+    "coc": "The ego vehicle executes a Turn maneuver to the left at the intersection, driven by its routing intent and authorized by the green traffic light.",
+    "kin": {
+     "speed_before": 9.07,
+     "speed_after_2s": 9.33,
+     "speed_end": 11.48,
+     "speed_min_future": 8.94,
+     "speed_max_future": 11.64,
+     "ax_mean_future_2s": -0.36,
+     "ax_min_future": -2.86,
+     "ax_max_future": 2.19,
+     "curv_abs_max_future": 0.04,
+     "heading_change_deg": 56.64,
+     "lateral_offset_m": 35.12,
+     "stopped_frac_future": 0.0,
+     "speed_drop": 0.14,
+     "dist_future_m": 59.05
+    }
+   },
+   {
+    "type": "gentle_accel",
+    "message": "no causal connective (because / due to / to ...)",
+    "coc": "INSUFFICIENT_EVIDENCE",
+    "kin": {
+     "speed_before": 0.0,
+     "speed_after_2s": 3.74,
+     "speed_end": 8.39,
+     "speed_min_future": 0.0,
+     "speed_max_future": 8.57,
+     "ax_mean_future_2s": 1.91,
+     "ax_min_future": -2.48,
+     "ax_max_future": 2.98,
+     "curv_abs_max_future": 0.05,
+     "heading_change_deg": 46.76,
+     "lateral_offset_m": 6.69,
+     "stopped_frac_future": 0.1,
+     "speed_drop": 0.0,
+     "dist_future_m": 30.21
+    }
+   },
+   {
+    "type": "stop",
+    "message": "no causal connective (because / due to / to ...)",
+    "coc": "The ego vehicle yields to the oncoming vehicle turning left.",
+    "kin": {
+     "speed_before": 0.24,
+     "speed_after_2s": 0.0,
+     "speed_end": 1.26,
+     "speed_min_future": 0.0,
+     "speed_max_future": 1.43,
+     "ax_mean_future_2s": -0.03,
+     "ax_min_future": -0.53,
+     "ax_max_future": 1.33,
+     "curv_abs_max_future": 0.01,
+     "heading_change_deg": -0.41,
+     "lateral_offset_m": 0.0,
+     "stopped_frac_future": 0.75,
+     "speed_drop": 0.24,
+     "dist_future_m": 1.39
+    }
+   },
+   {
+    "type": "steer_l",
+    "message": "no causal connective (because / due to / to ...)",
+    "coc": "The ego vehicle executes a turn maneuver, driven by the green traffic light and its routing intent to access the highway ramp.",
+    "kin": {
+     "speed_before": 7.79,
+     "speed_after_2s": 7.0,
+     "speed_end": 6.95,
+     "speed_min_future": 6.9,
+     "speed_max_future": 7.69,
+     "ax_mean_future_2s": -0.78,
+     "ax_min_future": -2.78,
+     "ax_max_future": -0.52,
+     "curv_abs_max_future": 0.05,
+     "heading_change_deg": 89.59,
+     "lateral_offset_m": 24.94,
+     "stopped_frac_future": 0.0,
+     "speed_drop": 0.89,
+     "dist_future_m": 42.61
+    }
+   }
+  ],
+  "K03": [
+   {
+    "type": "gentle_decel",
+    "message": "claims turn but heading change = 11 deg",
+    "coc": "Because the ego vehicle is approaching an intersection and intends to make a right turn, it applies gentle deceleration for speed adaptation and executes the turn.",
+    "kin": {
+     "speed_before": 6.24,
+     "speed_after_2s": 7.69,
+     "speed_end": 9.8,
+     "speed_min_future": 6.34,
+     "speed_max_future": 9.84,
+     "ax_mean_future_2s": -0.6,
+     "ax_min_future": -2.03,
+     "ax_max_future": 0.94,
+     "curv_abs_max_future": 0.04,
+     "heading_change_deg": -11.04,
+     "lateral_offset_m": -8.16,
+     "stopped_frac_future": 0.0,
+     "speed_drop": -0.1,
+     "dist_future_m": 50.01
+    }
+   },
+   {
+    "type": "stop",
+    "message": "claims turn but heading change = 0 deg",
+    "coc": "Because the traffic light is red, the ego vehicle decides to stop for static constraints and turn.",
+    "kin": {
+     "speed_before": 0.43,
+     "speed_after_2s": 0.0,
+     "speed_end": 0.0,
+     "speed_min_future": 0.0,
+     "speed_max_future": 0.16,
+     "ax_mean_future_2s": -0.02,
+     "ax_min_future": -1.36,
+     "ax_max_future": 0.88,
+     "curv_abs_max_future": 0.0,
+     "heading_change_deg": 0.0,
+     "lateral_offset_m": 0.0,
+     "stopped_frac_future": 1.0,
+     "speed_drop": 0.43,
+     "dist_future_m": 0.06
+    }
+   },
+   {
+    "type": "steer_l",
+    "message": "claims turn but heading change = 11 deg",
+    "coc": "The ego vehicle is at a stop line intending to turn left, yields to a crossing vehicle, and then executes the turn.",
+    "kin": {
+     "speed_before": 2.04,
+     "speed_after_2s": 1.46,
+     "speed_end": 2.61,
+     "speed_min_future": 0.51,
+     "speed_max_future": 3.23,
+     "ax_mean_future_2s": -0.29,
+     "ax_min_future": -1.17,
+     "ax_max_future": 3.42,
+     "curv_abs_max_future": 0.05,
+     "heading_change_deg": 10.66,
+     "lateral_offset_m": 0.64,
+     "stopped_frac_future": 0.0,
+     "speed_drop": 1.53,
+     "dist_future_m": 8.31
+    }
+   },
+   {
+    "type": "gentle_decel",
+    "message": "claims turn but heading change = 12 deg",
+    "coc": "The ego vehicle is performing speed adaptation and a turn to navigate the upcoming right curve.",
+    "kin": {
+     "speed_before": 5.96,
+     "speed_after_2s": 7.55,
+     "speed_end": 8.51,
+     "speed_min_future": 6.17,
+     "speed_max_future": 8.55,
+     "ax_mean_future_2s": -0.28,
+     "ax_min_future": -1.27,
+     "ax_max_future": 1.52,
+     "curv_abs_max_future": 0.05,
+     "heading_change_deg": 11.82,
+     "lateral_offset_m": -4.11,
+     "stopped_frac_future": 0.0,
+     "speed_drop": -0.21,
+     "dist_future_m": 45.54
+    }
+   }
+  ],
+  "S05": [
+   {
+    "type": "stop",
+    "message": "no Table-1 driving decision found",
+    "coc": "The ego vehicle is approaching an intersection with a stop sign, which requires the ego vehicle to stop.",
+    "kin": {
+     "speed_before": 0.19,
+     "speed_after_2s": 0.54,
+     "speed_end": 5.9,
+     "speed_min_future": 0.0,
+     "speed_max_future": 6.11,
+     "ax_mean_future_2s": 0.25,
+     "ax_min_future": -0.55,
+     "ax_max_future": 2.55,
+     "curv_abs_max_future": 0.0,
+     "heading_change_deg": -0.51,
+     "lateral_offset_m": -0.06,
+     "stopped_frac_future": 0.31,
+     "speed_drop": 0.19,
+     "dist_future_m": 13.36
+    }
+   },
+   {
+    "type": "gentle_accel",
+    "message": "no Table-1 driving decision found",
+    "coc": "INSUFFICIENT_EVIDENCE",
+    "kin": {
+     "speed_before": 0.0,
+     "speed_after_2s": 3.74,
+     "speed_end": 8.39,
+     "speed_min_future": 0.0,
+     "speed_max_future": 8.57,
+     "ax_mean_future_2s": 1.91,
+     "ax_min_future": -2.48,
+     "ax_max_future": 2.98,
+     "curv_abs_max_future": 0.05,
+     "heading_change_deg": 46.76,
+     "lateral_offset_m": 6.69,
+     "stopped_frac_future": 0.1,
+     "speed_drop": 0.0,
+     "dist_future_m": 30.21
+    }
+   },
+   {
+    "type": "gentle_decel",
+    "message": "no Table-1 driving decision found",
+    "coc": "Observing the upcoming STOP sign in the initial frames, the ego vehicle gently decelerates to prepare for a stop at the static constraint ahead.",
+    "kin": {
+     "speed_before": 9.22,
+     "speed_after_2s": 8.33,
+     "speed_end": 3.45,
+     "speed_min_future": 3.04,
+     "speed_max_future": 9.2,
+     "ax_mean_future_2s": -0.68,
+     "ax_min_future": -3.26,
+     "ax_max_future": 0.97,
+     "curv_abs_max_future": 0.0,
+     "heading_change_deg": 2.88,
+     "lateral_offset_m": 1.1,
+     "stopped_frac_future": 0.0,
+     "speed_drop": 6.19,
+     "dist_future_m": 42.29
+    }
+   }
+  ],
+  "S01": [
+   {
+    "type": "gentle_accel",
+    "message": "label too short (21 chars)",
+    "coc": "INSUFFICIENT_EVIDENCE",
+    "kin": {
+     "speed_before": 0.0,
+     "speed_after_2s": 3.74,
+     "speed_end": 8.39,
+     "speed_min_future": 0.0,
+     "speed_max_future": 8.57,
+     "ax_mean_future_2s": 1.91,
+     "ax_min_future": -2.48,
+     "ax_max_future": 2.98,
+     "curv_abs_max_future": 0.05,
+     "heading_change_deg": 46.76,
+     "lateral_offset_m": 6.69,
+     "stopped_frac_future": 0.1,
+     "speed_drop": 0.0,
+     "dist_future_m": 30.21
+    }
+   }
+  ],
+  "S03": [
+   {
+    "type": "gentle_accel",
+    "message": "model reported insufficient evidence",
+    "coc": "INSUFFICIENT_EVIDENCE",
+    "kin": {
+     "speed_before": 0.0,
+     "speed_after_2s": 3.74,
+     "speed_end": 8.39,
+     "speed_min_future": 0.0,
+     "speed_max_future": 8.57,
+     "ax_mean_future_2s": 1.91,
+     "ax_min_future": -2.48,
+     "ax_max_future": 2.98,
+     "curv_abs_max_future": 0.05,
+     "heading_change_deg": 46.76,
+     "lateral_offset_m": 6.69,
+     "stopped_frac_future": 0.1,
+     "speed_drop": 0.0,
+     "dist_future_m": 30.21
+    }
+   }
+  ],
+  "S12": [
+   {
+    "type": "gentle_accel",
+    "message": "no Table-2 critical component mentioned",
+    "coc": "INSUFFICIENT_EVIDENCE",
+    "kin": {
+     "speed_before": 0.0,
+     "speed_after_2s": 3.74,
+     "speed_end": 8.39,
+     "speed_min_future": 0.0,
+     "speed_max_future": 8.57,
+     "ax_mean_future_2s": 1.91,
+     "ax_min_future": -2.48,
+     "ax_max_future": 2.98,
+     "curv_abs_max_future": 0.05,
+     "heading_change_deg": 46.76,
+     "lateral_offset_m": 6.69,
+     "stopped_frac_future": 0.1,
+     "speed_drop": 0.0,
+     "dist_future_m": 30.21
+    }
+   }
+  ]
+ },
+ "rule_based": [
+  {
+   "type": "gentle_decel",
+   "pred": "The vehicle performs speed adaptation and lane keeping & centering because a gentle decel event (speed 10.9 to 7.1 m/s, heading change -10 deg) on the road ahead required this action to keep a safe speed for the situation ahead.",
+   "ref": "The ego vehicle gently decelerates to stop for static constraints because the traffic light ahead is red."
+  },
+  {
+   "type": "gentle_decel",
+   "pred": "The vehicle performs speed adaptation and turn because a gentle decel event (speed 8.9 to 9.8 m/s, heading change -64 deg) on the road ahead required this action to keep a safe speed for the situation ahead.",
+   "ref": "Observing the upcoming intersection and wet road conditions in the historical frames, the ego vehicle gently decelerates to safely execute a planned right turn, demonstrating speed adaptation and a turning maneuver."
+  },
+  {
+   "type": "steer_r",
+   "pred": "The vehicle performs set speed tracking and turn because a steer r event (speed 7.8 to 11.5 m/s, heading change -62 deg) on the road ahead required this action to follow the planned route through the turn.",
+   "ref": "The ego vehicle executes a Turn and engages in Lead obstacle following because it is approaching an intersection with a green traffic light, intending to turn right, and must maintain a safe distance from the lead vehicle ahead that is also executing a right turn."
+  },
+  {
+   "type": "gentle_decel",
+   "pred": "The vehicle performs speed adaptation and turn because a gentle decel event (speed 7.0 to 13.2 m/s, heading change -39 deg) on the road ahead required this action to keep a safe speed for the situation ahead.",
+   "ref": "Because the ego vehicle intends to make a left turn, it executes a turn and performs speed adaptation to safely navigate the curvature."
+  },
+  {
+   "type": "go_straight",
+   "pred": "The vehicle performs set speed tracking and lane change because a go straight event (speed 7.8 to 14.0 m/s, heading change -6 deg) on the road ahead required this action to complete the lane transition safely.",
+   "ref": "Observing a green traffic light and a clear path ahead in the initial frames, the ego vehicle maintains its trajectory by executing set speed tracking and lane keeping & centering to proceed straight through the intersection."
+  },
+  {
+   "type": "steer_r",
+   "pred": "The vehicle performs set speed tracking and lane change because a steer r event (speed 3.5 to 11.1 m/s, heading change -2 deg) on the road ahead required this action to complete the lane transition safely.",
+   "ref": "Guided by its routing intent to transition to the adjacent right lane, the ego vehicle executes a Lane change maneuver."
+  }
+ ],
+ "k04_case": {
+  "clip_id": "8d669f31-90e7-4828-a99b-264bf6dedd14",
+  "index": 1,
+  "coc": "After waiting for a crossing vehicle to clear the intersection at a green light, the ego vehicle accelerates to proceed straight and resume its target speed.",
+  "kinematics": {
+   "speed_before": 0.43631280098950587,
+   "speed_after_2s": 2.989090828373411,
+   "speed_end": 4.940370547526404,
+   "speed_min_future": 0.702854596666593,
+   "speed_max_future": 5.141328840685144,
+   "ax_mean_future_2s": 1.1517677350195314,
+   "ax_min_future": -1.9611088001101376,
+   "ax_max_future": 1.584496798349484,
+   "curv_abs_max_future": 0.12309901695530694,
+   "heading_change_deg": -71.02802238773886,
+   "lateral_offset_m": -7.510394881074192,
+   "stopped_frac_future": 0.0,
+   "speed_drop": -0.26654179567708713,
+   "dist_future_m": 19.496685972654447
+  }
+ }
+}

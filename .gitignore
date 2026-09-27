@@ -1,0 +1,12 @@
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+projects/
+*.egg-info/
+report/*.docx
+report/gen/node_modules/
+runs/
+data/samples/*.mov
+data/samples/*.mp4
+.DS_Store

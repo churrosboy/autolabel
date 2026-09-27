@@ -1,0 +1,17 @@
+[project]
+name = "autolabel"
+version = "0.3.0"
+description = "Chain-of-Causation auto-labelling for user-recorded driving videos"
+requires-python = ">=3.9"
+dependencies = ["numpy>=1.24", "opencv-python-headless>=4.8", "pillow>=10"]
+
+[project.optional-dependencies]
+gemini = ["google-genai>=1.0"]
+qwen = ["torch", "transformers>=4.57", "peft>=0.13"]
+dev = ["pytest>=7", "matplotlib>=3.7"]
+
+[project.scripts]
+autolabel = "autolabel.cli:main"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
