@@ -1,0 +1,117 @@
+{
+  "overall": {
+    "decision_precision": 0.11172413793103447,
+    "decision_recall": 0.11954022988505748,
+    "decision_f1": 0.11151067323481116,
+    "lon_match": 0.14482758620689656,
+    "lat_match": 0.2896551724137931,
+    "any_decision_overlap": 0.14482758620689656,
+    "component_jaccard": 0.4589655172413793,
+    "rouge_l": 0.15045727009685508,
+    "bleu4": 0.04807612398211406,
+    "n": 145,
+    "decision_f1_ci95": [
+      0.06666666666666667,
+      0.1600328407224959
+    ]
+  },
+  "by_group": {
+    "gentle_accel": {
+      "decision_precision": 0.0,
+      "decision_recall": 0.0,
+      "decision_f1": 0.0,
+      "lon_match": 0.0,
+      "lat_match": 0.03571428571428571,
+      "any_decision_overlap": 0.0,
+      "component_jaccard": 0.47678571428571426,
+      "rouge_l": 0.15654148440278956,
+      "bleu4": 0.05563375222551941,
+      "n": 28
+    },
+    "gentle_decel": {
+      "decision_precision": 0.125,
+      "decision_recall": 0.12222222222222222,
+      "decision_f1": 0.1175,
+      "lon_match": 0.13333333333333333,
+      "lat_match": 0.4,
+      "any_decision_overlap": 0.16666666666666666,
+      "component_jaccard": 0.4273015873015872,
+      "rouge_l": 0.13482849891670579,
+      "bleu4": 0.039245421590605914,
+      "n": 60
+    },
+    "go_straight": {
+      "decision_precision": 0.08095238095238096,
+      "decision_recall": 0.09523809523809523,
+      "decision_f1": 0.08503401360544219,
+      "lon_match": 0.09523809523809523,
+      "lat_match": 0.09523809523809523,
+      "any_decision_overlap": 0.14285714285714285,
+      "component_jaccard": 0.5204081632653061,
+      "rouge_l": 0.1530429429876356,
+      "bleu4": 0.05425516015967621,
+      "n": 21
+    },
+    "sharp_steer_r": {
+      "decision_precision": 0.0,
+      "decision_recall": 0.0,
+      "decision_f1": 0.0,
+      "lon_match": 0.0,
+      "lat_match": 0.0,
+      "any_decision_overlap": 0.0,
+      "component_jaccard": 0.3333333333333333,
+      "rouge_l": 0.12000000000000001,
+      "bleu4": 0.04386620964350276,
+      "n": 1
+    },
+    "steer_l": {
+      "decision_precision": 0.2857142857142857,
+      "decision_recall": 0.42857142857142855,
+      "decision_f1": 0.3333333333333333,
+      "lon_match": 0.5714285714285714,
+      "lat_match": 0.42857142857142855,
+      "any_decision_overlap": 0.42857142857142855,
+      "component_jaccard": 0.37857142857142856,
+      "rouge_l": 0.1804744297632259,
+      "bleu4": 0.0673010186200054,
+      "n": 7
+    },
+    "steer_r": {
+      "decision_precision": 0.26666666666666666,
+      "decision_recall": 0.26666666666666666,
+      "decision_f1": 0.26666666666666666,
+      "lon_match": 0.4,
+      "lat_match": 0.26666666666666666,
+      "any_decision_overlap": 0.26666666666666666,
+      "component_jaccard": 0.45333333333333337,
+      "rouge_l": 0.17300191929168546,
+      "bleu4": 0.051676633887206544,
+      "n": 15
+    },
+    "stop": {
+      "decision_precision": 0.125,
+      "decision_recall": 0.125,
+      "decision_f1": 0.125,
+      "lon_match": 0.125,
+      "lat_match": 0.75,
+      "any_decision_overlap": 0.125,
+      "component_jaccard": 0.6145833333333334,
+      "rouge_l": 0.18560227266061588,
+      "bleu4": 0.05730618590894934,
+      "n": 8
+    },
+    "strong_accel": {
+      "decision_precision": 0.0,
+      "decision_recall": 0.0,
+      "decision_f1": 0.0,
+      "lon_match": 0.0,
+      "lat_match": 0.4,
+      "any_decision_overlap": 0.0,
+      "component_jaccard": 0.38666666666666666,
+      "rouge_l": 0.1332725768040816,
+      "bleu4": 0.034127384147841264,
+      "n": 5
+    }
+  },
+  "labels_file": "labels_qwen_zeroshot.jsonl"
+}

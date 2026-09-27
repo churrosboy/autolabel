@@ -1,0 +1,129 @@
+{
+  "overall": {
+    "decision_precision": 0.6703499079189688,
+    "decision_recall": 0.6408839779005525,
+    "decision_f1": 0.6397329650092095,
+    "lon_match": 0.68646408839779,
+    "lat_match": 0.6312154696132597,
+    "any_decision_overlap": 0.755524861878453,
+    "component_jaccard": 0.6404926335174953,
+    "rouge_l": 0.40667258488701824,
+    "bleu4": 0.24293108434180102,
+    "n": 724,
+    "decision_f1_ci95": [
+      0.6118784530386749,
+      0.6706261510128929
+    ]
+  },
+  "by_group": {
+    "gentle_accel": {
+      "decision_precision": 0.7632113821138211,
+      "decision_recall": 0.8008130081300815,
+      "decision_f1": 0.7682926829268293,
+      "lon_match": 0.8048780487804879,
+      "lat_match": 0.6463414634146342,
+      "any_decision_overlap": 0.975609756097561,
+      "component_jaccard": 0.6309959349593499,
+      "rouge_l": 0.36155660448233873,
+      "bleu4": 0.18704984279704862,
+      "n": 164
+    },
+    "gentle_decel": {
+      "decision_precision": 0.529126213592233,
+      "decision_recall": 0.45523193096008635,
+      "decision_f1": 0.4719525350593311,
+      "lon_match": 0.540453074433657,
+      "lat_match": 0.517799352750809,
+      "any_decision_overlap": 0.5598705501618123,
+      "component_jaccard": 0.618554476806904,
+      "rouge_l": 0.42277139274091985,
+      "bleu4": 0.2531750712742706,
+      "n": 309
+    },
+    "go_straight": {
+      "decision_precision": 0.7325581395348837,
+      "decision_recall": 0.7441860465116279,
+      "decision_f1": 0.7364341085271318,
+      "lon_match": 0.686046511627907,
+      "lat_match": 0.7674418604651163,
+      "any_decision_overlap": 0.8023255813953488,
+      "component_jaccard": 0.6439922480620154,
+      "rouge_l": 0.39503646581704505,
+      "bleu4": 0.2811408096987879,
+      "n": 86
+    },
+    "sharp_steer_l": {
+      "decision_precision": 1.0,
+      "decision_recall": 1.0,
+      "decision_f1": 1.0,
+      "lon_match": 1.0,
+      "lat_match": 1.0,
+      "any_decision_overlap": 1.0,
+      "component_jaccard": 0.8125,
+      "rouge_l": 0.49749024989166546,
+      "bleu4": 0.2691679315969425,
+      "n": 4
+    },
+    "sharp_steer_r": {
+      "decision_precision": 1.0,
+      "decision_recall": 1.0,
+      "decision_f1": 1.0,
+      "lon_match": 1.0,
+      "lat_match": 1.0,
+      "any_decision_overlap": 1.0,
+      "component_jaccard": 0.8333333333333334,
+      "rouge_l": 0.438942617666022,
+      "bleu4": 0.3326830717275745,
+      "n": 3
+    },
+    "steer_l": {
+      "decision_precision": 0.9,
+      "decision_recall": 0.8625,
+      "decision_f1": 0.8749999999999998,
+      "lon_match": 0.9,
+      "lat_match": 0.9,
+      "any_decision_overlap": 0.9,
+      "component_jaccard": 0.7729166666666667,
+      "rouge_l": 0.44162079633833873,
+      "bleu4": 0.3049021939125903,
+      "n": 40
+    },
+    "steer_r": {
+      "decision_precision": 0.8888888888888888,
+      "decision_recall": 0.8111111111111111,
+      "decision_f1": 0.837037037037037,
+      "lon_match": 0.8222222222222222,
+      "lat_match": 0.8888888888888888,
+      "any_decision_overlap": 0.8888888888888888,
+      "component_jaccard": 0.7051851851851852,
+      "rouge_l": 0.4208131646361846,
+      "bleu4": 0.2422620287386952,
+      "n": 45
+    },
+    "stop": {
+      "decision_precision": 0.75,
+      "decision_recall": 0.6174242424242424,
+      "decision_f1": 0.6590909090909092,
+      "lon_match": 0.7272727272727273,
+      "lat_match": 0.75,
+      "any_decision_overlap": 0.75,
+      "component_jaccard": 0.6859848484848485,
+      "rouge_l": 0.47615181406121804,
+      "bleu4": 0.28783563158158015,
+      "n": 44
+    },
+    "strong_accel": {
+      "decision_precision": 0.6091954022988505,
+      "decision_recall": 0.7873563218390806,
+      "decision_f1": 0.6666666666666667,
+      "lon_match": 0.9310344827586207,
+      "lat_match": 0.3103448275862069,
+      "any_decision_overlap": 1.0,
+      "component_jaccard": 0.5218390804597701,
+      "rouge_l": 0.33335444732645064,
+      "bleu4": 0.1710122898619923,
+      "n": 29
+    }
+  },
+  "labels_file": "labels_qwen_lora.jsonl"
+}

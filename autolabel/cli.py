@@ -149,12 +149,21 @@ def build_parser() -> argparse.ArgumentParser:
     s = sub.add_parser("import-d3d"); s.add_argument("project"); s.add_argument("--ego", required=True); s.add_argument("--coc"); s.add_argument("--limit", type=int); s.set_defaults(fn=cmd_import_d3d)
     s = sub.add_parser("eval"); s.add_argument("project"); s.add_argument("--gt"); s.add_argument("--labels"); s.add_argument("--save", help="write full metrics JSON here"); s.set_defaults(fn=cmd_eval)
     s = sub.add_parser("fetch-frames"); s.add_argument("project"); s.add_argument("--layout", choices=["grid", "front"], default="grid"); s.add_argument("--limit", type=int); s.add_argument("--force", action="store_true"); s.set_defaults(fn=cmd_fetch_frames)
-    s = sub.add_parser("train"); s.add_argument("project"); s.add_argument("--out", required=True); s.add_argument("train_args", nargs=argparse.REMAINDER, help="extra args passed to autolabel.training.train"); s.set_defaults(fn=cmd_train)
+    s = sub.add_parser("train"); s.add_argument("project"); s.add_argument("--out", required=True); s.set_defaults(fn=cmd_train, train_args=[])  # args after "--" go to autolabel.training.train
     return ap
 
 
 def main(argv=None):
+    argv = list(sys.argv[1:] if argv is None else argv)
+    extra = []
+    if "--" in argv:
+        i = argv.index("--")
+        argv, extra = argv[:i], argv[i + 1:]
     args = build_parser().parse_args(argv)
+    if extra:
+        if args.fn is not cmd_train:
+            build_parser().error("arguments after -- are only accepted by train")
+        args.train_args = extra
     logging.basicConfig(level=logging.DEBUG if args.verbose else logging.INFO, format="%(levelname)s %(message)s")
     args.fn(args)
 

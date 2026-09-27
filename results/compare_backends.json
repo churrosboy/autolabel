@@ -1,0 +1,41 @@
+{
+ "rule_based (val)": {
+  "decision_f1": 0.5868965517241382,
+  "decision_precision": 0.5551724137931034,
+  "decision_recall": 0.6620689655172414,
+  "lon_match": 0.5862068965517241,
+  "lat_match": 0.4896551724137931,
+  "component_jaccard": 0.5390804597701149,
+  "rouge_l": 0.2082062337078141,
+  "bleu4": 0.077482332214076,
+  "filter_pass_rate": 1.0,
+  "filter_reject_rate": 0.0,
+  "n": 145
+ },
+ "qwen_zeroshot (val)": {
+  "decision_f1": 0.11151067323481116,
+  "decision_precision": 0.11172413793103447,
+  "decision_recall": 0.11954022988505748,
+  "lon_match": 0.14482758620689656,
+  "lat_match": 0.2896551724137931,
+  "component_jaccard": 0.4589655172413793,
+  "rouge_l": 0.15045727009685508,
+  "bleu4": 0.04807612398211406,
+  "filter_pass_rate": 0.18620689655172415,
+  "filter_reject_rate": 0.46206896551724136,
+  "n": 145
+ },
+ "qwen_lora (val)": {
+  "decision_f1": 0.6324137931034483,
+  "decision_precision": 0.671264367816092,
+  "decision_recall": 0.6229885057471264,
+  "lon_match": 0.6758620689655173,
+  "lat_match": 0.6137931034482759,
+  "component_jaccard": 0.6343678160919539,
+  "rouge_l": 0.40233739020415127,
+  "bleu4": 0.23901009363495046,
+  "filter_pass_rate": 1.0,
+  "filter_reject_rate": 0.0,
+  "n": 145
+ }
+}
