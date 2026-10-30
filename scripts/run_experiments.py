@@ -224,18 +224,10 @@ from autolabel.schemas import EgoMotion  # noqa: E402
 demo_json = SAMPLES / "demo_video_motion.json"
 if demo_json.exists():
     ego = EgoMotion.from_dict(json.loads(demo_json.read_text()))
+    meta = json.loads((SAMPLES / "demo_video_motion.meta.json").read_text()) if (SAMPLES / "demo_video_motion.meta.json").exists() else {}
     kfs = detect_keyframes(ego)
-    metrics["E4_video_real"] = {"file": "IMG_1416.mov (1080x1920 @30fps, 18.7 s)", "motion_seconds_measured": 4.6, "samples": ego.n, "keyframes": [k.to_dict() for k in kfs]}
-    t = ego.timestamps_us / 1e6
-    fig, ax = plt.subplots(2, 1, figsize=(7.2, 3.0), sharex=True)
-    ax[0].plot(t, ego.speed, color=C1); ax[0].set_ylabel("speed proxy")
-    ax[1].plot(t, ego.curvatures, color=C2); ax[1].set_ylabel("yaw proxy"); ax[1].set_xlabel("time (s)")
-    for k in kfs:
-        for a in ax:
-            a.axvline(k.timestamp_us / 1e6, color=C3, ls="--", lw=0.8)
-        ax[0].text(k.timestamp_us / 1e6 + 0.1, ax[0].get_ylim()[1] * 0.85, k.type, color=C3, fontsize=7)
-    ax[0].set_title("(a) Phone video (18.7 s, 1080x1920): optical-flow ego-motion proxies", loc="left")
-    fig.savefig(FIGS / "fig_e4_video_motion.png"); plt.close(fig)
+    metrics["E4_video_real"] = {**meta, "samples": ego.n, "keyframes_detected_here": len(kfs),
+                                "realtime_factor": round(meta.get("duration_s", 0) / meta["motion_seconds"], 1) if meta.get("motion_seconds") else None}
 
 sys.path.insert(0, str(ROOT / "tests"))
 from test_pipeline import make_synthetic_video  # noqa: E402
@@ -288,6 +280,26 @@ if k04:
     fig.suptitle(f"Label: \"{gt[(w.clip_id, w.index)][:95]}...\"  ->  K04", fontsize=7, y=1.02)
     fig.savefig(FIGS / "fig_k04_example.png"); plt.close(fig)
     examples["k04_case"] = {"clip_id": w.clip_id, "index": w.index, "coc": gt[(w.clip_id, w.index)], "kinematics": r.kinematics}
+
+# --------------------------------------------------------------------------- #
+# E6 fine-tuning results (produced on the GPU machine by scripts/run_finetune.sh)
+# --------------------------------------------------------------------------- #
+cmp_path = RESULTS / "compare_backends.json"
+if cmp_path.exists():
+    cmp = json.loads(cmp_path.read_text())
+    metrics["E6_finetune"] = cmp
+    names = list(cmp)
+    pretty = {"rule_based (val)": "rule-based", "qwen_zeroshot (val)": "Qwen3-VL-2B zero-shot", "qwen_lora (val)": "Qwen3-VL-2B + LoRA"}
+    mets = ["decision_f1", "lon_match", "lat_match", "component_jaccard", "rouge_l", "bleu4"]
+    labels_ = ["decision F1", "lon match", "lat match", "component Jaccard", "ROUGE-L", "BLEU-4"]
+    cols = [C1, C2, LIGHT]
+    fig, ax = plt.subplots(figsize=(7.2, 2.6))
+    wdt = 0.8 / len(names)
+    for i, n_ in enumerate(names):
+        ax.bar([j + i * wdt for j in range(len(mets))], [cmp[n_].get(m, 0) or 0 for m in mets], wdt, color=cols[i % 3], label=pretty.get(n_, n_))
+    ax.set_xticks([j + wdt * (len(names) - 1) / 2 for j in range(len(mets))]); ax.set_xticklabels(labels_, fontsize=8)
+    ax.set_ylim(0, 1.05); ax.legend(frameon=False, fontsize=7, ncol=3); ax.set_title(f"Backends vs Gemini labels on held-out clips (n={cmp[names[0]].get('n')})", loc="left")
+    fig.savefig(FIGS / "fig_backends.png"); plt.close(fig)
 
 (RESULTS / "metrics.json").write_text(json.dumps(metrics, indent=1, ensure_ascii=False))
 (RESULTS / "filter_examples.json").write_text(json.dumps(examples, indent=1, ensure_ascii=False))

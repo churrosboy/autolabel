@@ -41,7 +41,8 @@ def _grid(frames_by_cam: dict[str, np.ndarray], i: int, cell=(640, 360)) -> np.n
     return np.vstack([top, bottom])
 
 
-def fetch(project_dir: str | Path, layout: str = "grid", limit: Optional[int] = None, force: bool = False, max_side: int = 960) -> dict:
+def fetch(project_dir: str | Path, layout: str = "grid", limit: Optional[int] = None, force: bool = False, max_side: int = 960,
+          clips: Optional[list[str]] = None) -> dict:
     import physical_ai_av  # type: ignore
 
     p = Project.open(project_dir)
@@ -50,12 +51,14 @@ def fetch(project_dir: str | Path, layout: str = "grid", limit: Optional[int] = 
     wins = p.windows()
     by_clip: dict[str, list] = {}
     for w in wins:
+        if clips and not any(w.clip_id.startswith(c) for c in clips):
+            continue
         by_clip.setdefault(w.clip_id, []).append(w)
     done = skipped = failed = 0
     for n_clip, (clip_id, cw) in enumerate(by_clip.items()):
         if limit and n_clip >= limit:
             break
-        todo = [w for w in cw if force or not (p.frames_dir / clip_id / f"kf{w.index:03d}" / "sheet.jpg").exists()]
+        todo = [w for w in cw if force or not (p.frames_dir / clip_id / f"kf{w.index:03d}" / "frame_00.jpg").exists()]   # sheet.jpg alone may come from D3D snapshots
         if not todo:
             skipped += len(cw)
             continue
@@ -97,6 +100,70 @@ def fetch(project_dir: str | Path, layout: str = "grid", limit: Optional[int] = 
     return {"done": done, "skipped": skipped, "failed": failed, "layout": layout}
 
 
+def fetch_video(project_dir: str | Path, clips: list[str], camera: str = "front_wide", h264: bool = True, force: bool = False) -> dict:
+    """Pull whole-clip camera videos for the timeline player into <project>/video/<clip_id>.mp4.
+
+    The dataset packs ~97 clips per chunk zip; the clip's mp4 + frame-timestamp members are
+    read through HfFileSystem range requests, so only that clip is transferred.  A sidecar
+    <clip_id>.video.json records ``t0_us`` (clip time at playback position 0) for the UI.
+    The source is HEVC; with ffmpeg available it is transcoded to H.264 for browsers.
+    """
+    import io
+    import json
+    import shutil
+    import subprocess
+    import zipfile
+
+    import huggingface_hub as hf
+    import pandas as pd
+    import physical_ai_av  # type: ignore
+
+    p = Project.open(project_dir)
+    avdi = physical_ai_av.PhysicalAIAVDatasetInterface()
+    feat = CAMS[camera].lower()
+    ids = sorted({w.clip_id for w in p.windows() if any(w.clip_id.startswith(c) for c in clips)})
+    fs = getattr(avdi, "fs", None) or hf.HfFileSystem(token=getattr(avdi, "token", None))
+    out_dir = p.video_dir
+    out_dir.mkdir(parents=True, exist_ok=True)
+    done, skipped = [], []
+    for clip_id in ids:
+        out = out_dir / f"{clip_id}.mp4"
+        if out.exists() and not force:
+            skipped.append(clip_id)
+            continue
+        chunk = int(avdi.get_clip_chunk(clip_id))
+        path = f"datasets/{avdi.repo_id}/camera/{feat}/{feat}.chunk_{chunk:04d}.zip"
+        with fs.open(path, "rb", block_size=8 * 2**20) as f:
+            zf = zipfile.ZipFile(f)
+            video = zf.read(f"{clip_id}.{feat}.mp4")
+            ts = pd.read_parquet(io.BytesIO(zf.read(f"{clip_id}.{feat}.timestamps.parquet")))["timestamp"].to_numpy()
+        raw = out_dir / f"{clip_id}.src.mp4"
+        raw.write_bytes(video)
+        codec = "hevc"
+        if h264 and shutil.which("ffmpeg"):
+            subprocess.run(["ffmpeg", "-v", "error", "-y", "-i", str(raw), "-c:v", "libx264", "-preset", "fast", "-crf", "22",
+                            "-pix_fmt", "yuv420p", "-movflags", "+faststart", str(out)], check=True)
+            raw.unlink()
+            codec = "h264"
+        else:
+            raw.rename(out)
+        meta = {"clip_id": clip_id, "camera": feat, "t0_us": int(ts[0]), "t1_us": int(ts[-1]), "n_timestamps": int(len(ts)),
+                "duration_s": round((int(ts[-1]) - int(ts[0])) / 1e6, 3), "codec": codec,
+                "source": f"{avdi.repo_id} {feat} chunk {chunk}"}
+        try:
+            import cv2
+
+            cap = cv2.VideoCapture(str(out))
+            meta.update(fps=round(cap.get(cv2.CAP_PROP_FPS), 3), width=int(cap.get(3)), height=int(cap.get(4)))
+            cap.release()
+        except Exception:  # noqa: BLE001
+            pass
+        (out_dir / f"{clip_id}.video.json").write_text(json.dumps(meta, indent=1))
+        log.info("clip %s: video %s (%.1f MB, %s)", clip_id, out.name, out.stat().st_size / 1e6, codec)
+        done.append(clip_id)
+    return {"done": done, "skipped": skipped, "camera": camera}
+
+
 def main(argv=None):
     import argparse
 
@@ -106,9 +173,16 @@ def main(argv=None):
     ap.add_argument("--limit", type=int, help="first N clips only")
     ap.add_argument("--force", action="store_true")
     ap.add_argument("--max-side", type=int, default=960)
+    ap.add_argument("--clips", nargs="+", help="only these clip ids (prefix match)")
+    ap.add_argument("--video", action="store_true", help="also pull the whole-clip camera mp4 for the timeline player (needs --clips)")
+    ap.add_argument("--camera", choices=list(CAMS), default="front_wide")
     a = ap.parse_args(argv)
     logging.basicConfig(level=logging.INFO, format="%(levelname)s %(message)s")
-    print(fetch(a.project, a.layout, a.limit, a.force, a.max_side))
+    print(fetch(a.project, a.layout, a.limit, a.force, a.max_side, a.clips))
+    if a.video:
+        if not a.clips:
+            ap.error("--video needs --clips (one clip's video is ~15 MB; refusing to pull all)")
+        print(fetch_video(a.project, a.clips, a.camera, force=a.force))
 
 
 if __name__ == "__main__":

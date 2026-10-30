@@ -1,0 +1,914 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CoCaKiLa Timeline</title>
+<style>
+  :root {
+    --bg:#1c1c1c; --well:#161616; --panel:#232323; --panel2:#1e1e1e; --tb:#2a2a2a; --raise:#3a3a3a; --line:#101010; --line2:#3b3b3b;
+    --ink:#e9e9e9; --ink2:#b9b9b9; --muted:#8c8c8c;
+    --accent:#2d7df6; --sel:#f3c43b; --play:#ffffff; --skim:#ff4b4b;
+    --lon:#4c7fd6; --lat:#8f6fd6; --hist:rgba(76,127,214,.22);
+    --pass:#4fbf62; --review:#e0a93a; --reject:#ea5b5b; --na:#777;
+    --wave:#45a159; --wave-neg:#e08a3c; --wavebg:#1d2a21; --waveline:#2a3d2f; --thr:#e3c56a;
+    --mono:"SF Mono", ui-monospace, Menlo, Consolas, monospace;
+  }
+  * { box-sizing:border-box; }
+  html, body { height:100%; }
+  body { margin:0; font:12px/1.4 -apple-system, "SF Pro Text", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; background:var(--bg); color:var(--ink); overflow:hidden; font-variant-numeric:tabular-nums; -webkit-font-smoothing:antialiased; user-select:none; }
+  .app { display:grid; grid-template-rows:40px minmax(0,1fr) 5px var(--tl-h, 46vh); height:100vh; }
+  /* ---- toolbar + dashboard */
+  .toolbar { display:grid; grid-template-columns:1fr auto 1fr; align-items:center; padding:0 10px; background:linear-gradient(#313131,#272727); border-bottom:1px solid var(--line); }
+  .toolbar .l, .toolbar .r { display:flex; align-items:center; gap:6px; } .toolbar .r { justify-content:flex-end; }
+  .brand { font-weight:600; font-size:12px; color:var(--ink2); display:flex; gap:7px; align-items:center; margin-right:8px; }
+  .brand i { width:14px; height:14px; border-radius:4px; background:linear-gradient(#4a4a4a,#2a2a2a); border:1px solid #5a5a5a; display:inline-block; }
+  .brand span { color:var(--muted); font-weight:500; }
+  .dash { display:flex; align-items:center; gap:12px; height:30px; padding:0 14px; border-radius:6px; background:#121212; border:1px solid #0a0a0a; box-shadow:inset 0 1px 0 rgba(255,255,255,.04); }
+  .dash .tc { font:500 17px/1 var(--mono); letter-spacing:.06em; color:#fff; min-width:118px; text-align:center; }
+  .dash .sub { font:11px var(--mono); color:var(--muted); }
+  .dash .skim { font:11px var(--mono); color:var(--skim); min-width:90px; }
+  /* ---- controls */
+  select, button { font-family:inherit; font-size:12px; height:24px; padding:0 9px; color:var(--ink); background:linear-gradient(#4b4b4b,#3b3b3b); border:1px solid #242424; border-radius:5px; box-shadow:inset 0 1px 0 rgba(255,255,255,.07), 0 1px 0 rgba(0,0,0,.45); }
+  select { appearance:none; -webkit-appearance:none; padding-right:22px; background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23c8c8c8' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M7 10l5 5 5-5'/%3E%3C/svg%3E"), linear-gradient(#4b4b4b,#3b3b3b); background-repeat:no-repeat; background-position:right 6px center, 0 0; background-size:11px, auto; cursor:pointer; }
+  select:hover { background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23ffffff' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M7 10l5 5 5-5'/%3E%3C/svg%3E"), linear-gradient(#575757,#464646); }
+  button { cursor:pointer; display:inline-flex; align-items:center; gap:5px; white-space:nowrap; }
+  button:hover { background:linear-gradient(#575757,#464646); } button:active { background:linear-gradient(#333,#2b2b2b); }
+  button:disabled { opacity:.4; cursor:default; }
+  button.blue { background:linear-gradient(#4190ff,#2b74e6); border-color:#1b4b9c; color:#fff; } button.blue:hover { background:linear-gradient(#4f9bff,#357fef); }
+  button.icon { width:26px; padding:0; justify-content:center; }
+  button.flat { background:transparent; border-color:transparent; box-shadow:none; color:var(--ink2); } button.flat:hover { background:#3a3a3a; color:#fff; }
+  button svg { width:14px; height:14px; flex:none; }
+  button.on { background:linear-gradient(#4190ff,#2b74e6); border-color:#1b4b9c; color:#fff; }
+  .seg { display:inline-flex; border-radius:5px; overflow:hidden; border:1px solid #242424; box-shadow:0 1px 0 rgba(0,0,0,.45); height:24px; }
+  .seg > * { border:0 !important; border-radius:0 !important; box-shadow:none !important; border-right:1px solid #242424 !important; height:22px; }
+  .seg > *:last-child { border-right:0 !important; }
+  .seg > .on { background:linear-gradient(#4190ff,#2b74e6) !important; color:#fff; }
+  .seg > .on.ok { background:linear-gradient(#4aa85b,#378a46) !important; } .seg > .on.bad { background:linear-gradient(#d9534f,#b8413d) !important; }
+  kbd { font:10px var(--mono); color:var(--muted); border:1px solid #2a2a2a; border-radius:3px; padding:0 3px; background:#262626; margin-left:2px; }
+  .seg > .on kbd { color:rgba(255,255,255,.7); background:rgba(0,0,0,.25); border-color:transparent; }
+  a.tool { color:var(--ink2); text-decoration:none; display:inline-flex; align-items:center; gap:5px; height:24px; padding:0 8px; border-radius:5px; } a.tool:hover { background:#3a3a3a; color:#fff; } a.tool svg { width:14px; height:14px; }
+  /* ---- top area: index / viewer / inspector */
+  .top { display:grid; grid-template-columns:var(--lw,272px) 5px minmax(0,1fr) 5px var(--rw,352px); min-height:0; }
+  .top.insp-min { grid-template-columns:var(--lw,272px) 5px minmax(0,1fr) 5px 37px; }
+  .vdiv { background:#0d0d0d; border-left:1px solid #000; border-right:1px solid #303030; cursor:col-resize; transition:background .12s; }
+  .vdiv:hover, .vdiv.on, .divider:hover, .divider.on { background:#3a3a3a; }
+  .top.insp-min .vdiv.r { cursor:default; pointer-events:none; }
+  .pane { background:var(--panel); display:flex; flex-direction:column; min-height:0; }
+  .pane-h { height:30px; flex:none; display:flex; align-items:center; gap:8px; padding:0 10px; font-size:11px; font-weight:600; color:var(--ink2); border-bottom:1px solid var(--line); background:#282828; }
+  .tabs { display:inline-flex; background:#191919; border-radius:5px; padding:2px; gap:2px; }
+  .tabs button { height:19px; padding:0 9px; background:transparent; border:0; box-shadow:none; color:var(--ink2); font-size:11px; border-radius:4px; }
+  .tabs button.on { background:#4a4a4a; color:#fff; } .tabs button:hover { background:#333; }
+  .pane-b { overflow:auto; min-height:0; flex:1; }
+  .idx .row { display:grid; grid-template-columns:72px minmax(0,1fr) auto; gap:8px; align-items:center; padding:5px 10px 5px 8px; border-bottom:1px solid #1b1b1b; color:var(--ink2); border-left:3px solid transparent; }
+  .idx .row.cand { grid-template-columns:8px minmax(0,1fr) auto; }
+  .idx .th { width:72px; aspect-ratio:16/9; object-fit:cover; border-radius:3px; background:#111; display:block; border:1px solid #141414; }
+  .idx .th.none { display:flex; align-items:center; justify-content:center; font-size:9px; color:#666; }
+  .idx .row:hover { background:#2d2d2d; } .idx .row.sel { background:var(--accent); color:#fff; }
+  .idx .dot { width:8px; height:8px; border-radius:2px; }
+  .idx .n { font-weight:600; color:var(--ink); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; } .idx .row.sel .n { color:#fff; }
+  .idx .m { font-size:10.5px; color:var(--muted); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; } .idx .row.sel .m { color:rgba(255,255,255,.75); }
+  .idx .tc { font:11px var(--mono); color:var(--muted); } .idx .row.sel .tc { color:rgba(255,255,255,.85); }
+  .idx .empty { padding:14px 12px; color:var(--muted); font-size:11px; }
+  .viewer { display:flex; flex-direction:column; min-height:0; background:#101010; }
+  .viewer .vh { height:30px; flex:none; display:flex; align-items:center; gap:10px; padding:0 10px; font-size:11px; color:var(--muted); background:#1b1b1b; border-bottom:1px solid var(--line); }
+  .viewer .vh select.clip { min-width:250px; max-width:46%; font-size:11.5px; height:22px; }
+  .viewer .vh .info { display:flex; align-items:center; gap:0; min-width:0; white-space:nowrap; overflow:hidden; color:var(--ink2); font-size:11px; }
+  .viewer .vh .info span { overflow:hidden; text-overflow:ellipsis; padding:0 8px; border-left:1px solid #333; } .viewer .vh .info span:first-child { padding-left:0; border-left:0; }
+  .viewer .vh .info span.k { color:var(--muted); } .viewer .vh .info span.k b { color:var(--ink2); font-weight:500; margin-left:4px; }
+  .stage { flex:1; min-height:0; position:relative; display:flex; align-items:center; justify-content:center; background:#000; }
+  .stage video, .stage img { max-width:100%; max-height:100%; width:auto; height:auto; object-fit:contain; display:block; }
+  .stage .note { position:absolute; left:50%; transform:translateX(-50%); bottom:12px; background:rgba(0,0,0,.65); color:#ccc; font-size:11px; padding:4px 10px; border-radius:4px; white-space:nowrap; }
+  .viewer .vf { height:36px; flex:none; display:flex; align-items:center; justify-content:center; gap:2px; background:#1b1b1b; border-top:1px solid var(--line); }
+  .viewer .vf button { background:transparent; border:0; box-shadow:none; width:32px; height:30px; color:var(--ink2); } .viewer .vf button:hover { background:#2c2c2c; color:#fff; }
+  .viewer .vf button svg { width:16px; height:16px; } .viewer .vf button.play svg { width:20px; height:20px; }
+  /* ---- inspector */
+  .pane.right { display:grid; grid-template-columns:minmax(0,1fr) 36px; grid-template-rows:minmax(0,1fr); }
+  .top.insp-min .pane.right .col { display:none; }
+  .insp .col { display:flex; flex-direction:column; min-height:0; min-width:0; }
+  .abar { border-left:1px solid var(--line); background:#1f1f1f; display:flex; flex-direction:column; align-items:center; padding-top:4px; gap:2px; }
+  .abar button { width:30px; height:30px; padding:0; justify-content:center; background:transparent; border-color:transparent; box-shadow:none; color:#8a8a8a; border-radius:6px; position:relative; }
+  .abar button:hover { background:#2e2e2e; color:#ddd; }
+  .abar button.on { color:#fff; background:#333; } .abar button.on::before { content:""; position:absolute; left:-4px; top:7px; width:2px; height:16px; background:var(--accent); border-radius:1px; }
+  .abar button svg { width:16px; height:16px; }
+  .abar .sp { flex:1; }
+  .insp .title { padding:8px 12px; flex:none; display:flex; align-items:center; gap:8px; border-bottom:1px solid var(--line); background:#282828; }
+  .insp .title b { font-size:12px; } .insp .title .m { color:var(--muted); font:11px var(--mono); margin-left:auto; }
+  .sec { border-bottom:1px solid var(--line); }
+  .sec > h4 { margin:0; padding:7px 8px 7px 12px; font-size:11px; font-weight:600; color:var(--ink2); display:flex; align-items:center; gap:6px; }
+  .sec > h4 svg { width:13px; height:13px; color:var(--muted); }
+  .sec > h4 .r { margin-left:auto; font-weight:400; color:var(--muted); font-family:var(--mono); font-size:10.5px; }
+  .sec > h4 .x { width:18px; height:18px; padding:0; justify-content:center; background:transparent; border-color:transparent; box-shadow:none; color:var(--muted); margin-left:4px; } .sec > h4 .x:hover { color:#fff; background:#333; }
+  .sec > h4 .x svg { width:11px; height:11px; }
+  .insp .empty { padding:14px 12px; color:var(--muted); font-size:11px; line-height:1.6; }
+  /* a freshly opened panel slides in and glows for a moment; the icon pops */
+  @keyframes secIn { from { opacity:0; transform:translateY(-6px); } to { opacity:1; transform:none; } }
+  @keyframes secGlow { 0% { box-shadow:inset 3px 0 0 var(--accent), inset 0 0 0 1px rgba(45,125,246,.55); background:rgba(45,125,246,.14); } 60% { box-shadow:inset 3px 0 0 var(--accent), inset 0 0 0 1px rgba(45,125,246,.25); background:rgba(45,125,246,.06); } 100% { box-shadow:inset 3px 0 0 transparent, inset 0 0 0 1px transparent; background:transparent; } }
+  .sec.fresh { animation:secIn .18s ease-out, secGlow 1.1s ease-out .05s; }
+  @keyframes pop { 0% { transform:scale(1); } 40% { transform:scale(1.25); } 100% { transform:scale(1); } }
+  .abar button.pop svg { animation:pop .25s ease-out; }
+  @keyframes dotIn { from { transform:scaleY(0); } to { transform:scaleY(1); } }
+  .abar button.on::before { animation:dotIn .18s ease-out; }
+  .sec .body { padding:2px 12px 10px; display:flex; flex-direction:column; gap:6px; }
+  .irow { display:grid; grid-template-columns:86px minmax(0,1fr); gap:10px; align-items:start; min-height:22px; } .irow label { line-height:22px; }
+  .irow label { text-align:right; color:var(--muted); font-size:11px; }
+  .irow .v { color:var(--ink); display:flex; align-items:center; gap:6px; flex-wrap:wrap; } .irow .v.mono { font-family:var(--mono); font-size:11px; }
+  .badge { font:600 10px var(--mono); letter-spacing:.05em; text-transform:uppercase; padding:2px 6px; border-radius:3px; color:#fff; }
+  .badge.pass { background:#2f8a40; } .badge.review { background:#b8831f; } .badge.reject { background:#b8413d; } .badge.na { background:#555; }
+  .chips { display:flex; gap:5px 4px; flex-wrap:wrap; }
+  .cgrp { display:flex; flex-direction:column; gap:4px; padding:4px 0 2px; border-top:1px solid #2a2a2a; } .cgrp:first-of-type { border-top:0; padding-top:0; }
+  .vrow { display:flex; align-items:center; gap:8px; height:22px; padding-top:2px; } .vrow .muted { font-size:11px; }
+  .vrow .cap, .cgrp .cap { font-size:10px; font-weight:600; letter-spacing:.06em; text-transform:uppercase; color:var(--muted); display:flex; align-items:center; gap:6px; }
+  .cgrp .cap i { width:8px; height:8px; border-radius:2px; display:inline-block; } .cgrp .cap .n { font-weight:400; letter-spacing:0; text-transform:none; margin-left:auto; color:var(--muted); }
+  .chip { font-size:11.5px; line-height:18px; padding:1px 8px; border-radius:999px; background:#343434; color:var(--ink2); border:1px solid #2a2a2a; cursor:pointer; } .chip:hover { background:#404040; color:#fff; }
+  .chip.on { background:var(--lon); border-color:transparent; color:#fff; } .chip.lat.on { background:var(--lat); } .chip.comp { background:#2a3340; color:#9db4d8; cursor:default; }
+  textarea { width:100%; min-height:84px; font:12.5px/1.55 inherit; font-family:inherit; padding:7px 9px; border:1px solid #141414; border-radius:5px; resize:vertical; background:#171717; color:var(--ink); user-select:text; }
+  textarea:focus { outline:none; border-color:var(--accent); box-shadow:0 0 0 2px rgba(45,125,246,.35); }
+  .issues { margin:0; padding-left:14px; font-size:11px; } .issues .error { color:var(--reject);} .issues .warning { color:var(--review);} .issues .info { color:var(--muted);} .issues b { font-family:var(--mono); font-weight:500; }
+  .frames { display:grid; grid-template-columns:repeat(4,1fr); gap:4px; }
+  .frames figure { margin:0; position:relative; } .frames img { width:100%; aspect-ratio:var(--ar,16/9); object-fit:cover; display:block; border-radius:3px; border-top:2px solid #555; background:#111; transition:transform .1s; }
+  .frames img.h { border-top-color:var(--lon); } .frames img.cur { outline:2px solid var(--sel); outline-offset:-1px; }
+  .frames img:hover { outline:2px solid #fff; outline-offset:-1px; }
+  /* hover preview: a fixed layer outside the scrolling pane so it is never clipped */
+  #peek { position:fixed; z-index:50; display:none; pointer-events:none; background:#000; border:1px solid #3a3a3a; border-radius:6px; box-shadow:0 14px 40px rgba(0,0,0,.75); padding:4px; }
+  #peek img { display:block; width:var(--pw, 640px); aspect-ratio:var(--ar,16/9); object-fit:contain; background:#000; border-radius:3px; }
+  #peek .cap { position:absolute; left:10px; bottom:10px; font:11px var(--mono); color:#fff; background:rgba(0,0,0,.65); padding:2px 7px; border-radius:3px; }
+  .frames figcaption { position:absolute; left:3px; top:4px; font:9px var(--mono); color:#fff; background:rgba(0,0,0,.6); padding:0 3px; border-radius:2px; pointer-events:none; }
+  .kfimg { width:100%; aspect-ratio:var(--ar,16/9); object-fit:cover; display:block; border-radius:5px; background:#111; border:1px solid #141414; }
+  .kfimg-wrap { position:relative; } .kfimg-wrap .cap { position:absolute; left:8px; bottom:6px; font:10px var(--mono); color:#fff; background:rgba(0,0,0,.6); padding:1px 6px; border-radius:3px; }
+  #tip { position:fixed; z-index:60; display:none; pointer-events:none; background:#111; color:#eee; font-size:11px; line-height:1.3; padding:4px 8px; border-radius:4px; border:1px solid #3a3a3a; white-space:nowrap; box-shadow:0 4px 14px rgba(0,0,0,.6); }
+  .path svg { width:100%; height:auto; display:block; border-radius:5px; background:#191919; border:1px solid #141414; }
+  .muted { color:var(--muted); font-size:11px; }
+  /* ---- divider + timeline */
+  .divider { background:#0d0d0d; border-top:1px solid #000; border-bottom:1px solid #303030; cursor:row-resize; transition:background .12s; }
+  .tl { display:flex; flex-direction:column; min-height:0; background:var(--well); }
+  .tl-h { height:30px; flex:none; display:flex; align-items:center; gap:8px; padding:0 10px; background:#262626; border-bottom:1px solid var(--line); font-size:11px; color:var(--muted); }
+  .tl-h .hint { flex:1; font:11px var(--mono); color:var(--ink2); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; text-align:center; padding:0 10px; }
+  .tl-h .lg { display:inline-flex; align-items:center; gap:5px; margin-right:6px; color:var(--ink2); } .tl-h .lg i { width:10px; height:10px; border-radius:2px; display:inline-block; }
+  .tl-h .help { font-weight:700; font-size:13px; } .tl-h .help.on { background:linear-gradient(#4190ff,#2b74e6); color:#fff; }
+  #keys { position:fixed; z-index:40; display:none; background:#2a2a2a; border:1px solid #3a3a3a; border-radius:8px; box-shadow:0 10px 30px rgba(0,0,0,.6); padding:10px 12px; min-width:300px; }
+  #keys.on { display:block; } #keys h5 { margin:0 0 6px; font-size:11px; font-weight:600; color:var(--ink2); }
+  #keys table { border-collapse:collapse; width:100%; font-size:11.5px; color:var(--ink2); } #keys td { padding:3px 0; vertical-align:middle; } #keys td:first-child { width:118px; white-space:nowrap; }
+  #keys kbd { font-size:10.5px; padding:1px 5px; color:var(--ink); background:#1d1d1d; border-color:#3a3a3a; }
+  .scroller { flex:1; overflow-x:auto; overflow-y:hidden; position:relative; min-height:0; cursor:crosshair; }
+  .scroller::-webkit-scrollbar { height:9px; } .scroller::-webkit-scrollbar-thumb { background:#444; border-radius:5px; border:2px solid var(--well); } .scroller::-webkit-scrollbar-track { background:#1a1a1a; }
+  canvas { display:block; }
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="toolbar">
+    <div class="l">
+      <span class="brand"><i></i>CoCaKiLa <span>timeline</span></span>
+      <div class="seg"><select id="addType" data-tip="추가할 keyframe 유형"></select><button id="addKf" data-tip="재생 위치에 keyframe 추가"></button></div>
+    </div>
+    <div class="dash">
+      <span class="tc" id="tcur">00:00:00:00</span>
+      <span class="sub" id="tdur">/ 00:00:00:00</span>
+      <span class="skim" id="skimtc"></span>
+    </div>
+    <div class="r">
+      <button id="skimBtn" class="flat" data-tip="스키밍 (s)"></button>
+      <a class="tool" href="/" id="listLink">list view</a>
+    </div>
+  </div>
+
+  <div class="top">
+    <aside class="pane left">
+      <div class="pane-h">Index <span class="tabs" style="margin-left:auto"><button id="tabW" class="on">Keyframes</button><button id="tabC">Candidates</button></span></div>
+      <div class="pane-b idx" id="idx"></div>
+    </aside>
+    <div class="vdiv l" id="vdivL" data-tip="더블클릭 = 기본 폭"></div>
+    <section class="viewer">
+      <div class="vh"><select id="clipSel" class="clip"></select><span class="info" id="clipInfo"></span></div>
+      <div class="stage">
+        <video id="vid" preload="metadata" playsinline></video>
+        <img id="fb" style="display:none" alt="">
+        <div class="note" id="note" style="display:none"></div>
+      </div>
+      <div class="vf">
+        <button id="prevKf" data-tip="이전 keyframe  ["></button>
+        <button id="back1" data-tip="−1 s"></button>
+        <button id="play" class="play" data-tip="재생 / 정지  (space)"></button>
+        <button id="fwd1" data-tip="+1 s"></button>
+        <button id="nextKf" data-tip="다음 keyframe  ]"></button>
+      </div>
+    </section>
+    <div class="vdiv r" id="vdivR" data-tip="더블클릭 = 기본 폭"></div>
+    <aside class="pane right insp">
+      <div class="col">
+        <div class="pane-h">Inspector <span class="r" id="inspTitle" style="margin-left:auto; font-weight:400; color:var(--muted); font-family:var(--mono); font-size:10.5px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; min-width:0"></span></div>
+        <div class="pane-b" id="card"><div class="muted" style="padding:12px">loading…</div></div>
+      </div>
+      <div class="abar" id="abar"></div>
+    </aside>
+  </div>
+
+  <div id="peek"><img alt=""><span class="cap"></span></div>
+  <div id="tip"></div>
+  <div id="keys">
+    <h5>단축키</h5>
+    <table>
+      <tr><td><kbd>space</kbd></td><td>재생 / 일시정지</td></tr>
+      <tr><td><kbd>←</kbd> <kbd>→</kbd></td><td>1프레임 이동 · <kbd>shift</kbd> = 1 s</td></tr>
+      <tr><td><kbd>[</kbd> <kbd>]</kbd></td><td>이전 / 다음 윈도우</td></tr>
+      <tr><td><kbd>a</kbd> <kbd>e</kbd> <kbd>r</kbd></td><td>Approve · Save · Reject</td></tr>
+      <tr><td><kbd>1</kbd> – <kbd>5</kbd></td><td>Inspector 패널 열기 / 닫기</td></tr>
+      <tr><td><kbd>s</kbd></td><td>스키머(빨간 선) 켜기 / 끄기</td></tr>
+      <tr><td><kbd>⌘</kbd> + 휠</td><td>타임라인 zoom</td></tr>
+      <tr><td>마커 드래그</td><td>클립 안 ▼ 마커를 끌면 keyframe 이동</td></tr>
+      <tr><td>경계선 더블클릭</td><td>패널 폭 기본값으로</td></tr>
+    </table>
+  </div>
+
+  <div class="divider" id="divider"></div>
+
+  <section class="tl">
+    <div class="tl-h">
+      <span class="lg"><i style="background:var(--lon)"></i>longitudinal</span>
+      <span class="lg"><i style="background:var(--lat)"></i>lateral</span>
+      <span class="lg"><i style="background:var(--hist); border:1px solid var(--lon)"></i>history −2 s</span>
+      <span class="lg"><i style="background:var(--sel)"></i>selected</span>
+      <span class="lg"><i style="background:#8a8a8a; height:7px; border-radius:1px"></i>dropped candidate</span>
+      <span class="lg"><i style="background:var(--play); width:2px"></i>playhead</span>
+      <span class="lg"><i style="background:var(--skim); width:2px"></i>skimmer</span>
+      <span class="hint" id="hint"></span>
+      <button id="keysBtn" class="icon help" data-tip="단축키">?</button>
+      <div class="seg" style="margin-left:6px"><button id="zoomOut" class="icon" data-tip="zoom out"></button><button id="zoomFit" class="icon" data-tip="전체 맞춤"></button><button id="zoomIn" class="icon" data-tip="zoom in"></button></div>
+    </div>
+    <div class="scroller" id="scroller"><canvas id="cv"></canvas></div>
+  </section>
+</div>
+<script>
+const $ = s => document.querySelector(s);
+const esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const css = v => getComputedStyle(document.documentElement).getPropertyValue(v).trim();
+const svg = d => `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${d}</svg>`;
+const ICO = {
+  play: svg('<path d="M7 4.5v15l13-7.5z" fill="currentColor" stroke="none"/>'),
+  pause: svg('<rect x="6" y="5" width="4" height="14" rx="1" fill="currentColor" stroke="none"/><rect x="14" y="5" width="4" height="14" rx="1" fill="currentColor" stroke="none"/>'),
+  skipBack: svg('<path d="M19 5v14L8 12z" fill="currentColor" stroke="none"/><path d="M5 5v14"/>'),
+  skipFwd: svg('<path d="M5 5v14l11-7z" fill="currentColor" stroke="none"/><path d="M19 5v14"/>'),
+  stepBack: svg('<path d="M11 17l-5-5 5-5M18 17l-5-5 5-5"/>'),
+  stepFwd: svg('<path d="M13 17l5-5-5-5M6 17l5-5-5-5"/>'),
+  plus: svg('<path d="M12 5v14M5 12h14"/>'),
+  zoomIn: svg('<circle cx="11" cy="11" r="7"/><path d="M21 21l-4.5-4.5M11 8v6M8 11h6"/>'),
+  zoomOut: svg('<circle cx="11" cy="11" r="7"/><path d="M21 21l-4.5-4.5M8 11h6"/>'),
+  fit: svg('<path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/>'),
+  check: svg('<path d="M5 12l5 5L20 7"/>'),
+  edit: svg('<path d="M12 20h9M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"/>'),
+  x: svg('<path d="M18 6L6 18M6 6l12 12"/>'),
+  trash: svg('<path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6"/>'),
+  refresh: svg('<path d="M21 12a9 9 0 1 1-2.6-6.4"/><path d="M21 3v6h-6"/>'),
+  list: svg('<path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/>'),
+  type: svg('<path d="M4 7V4h16v3M9 20h6M12 4v16"/>'),
+  skim: svg('<path d="M3 12h18M12 3v18" stroke-dasharray="2 3"/><circle cx="12" cy="12" r="3" fill="currentColor" stroke="none"/>'),
+};
+for (const [id, k] of [['prevKf', 'skipBack'], ['back1', 'stepBack'], ['play', 'play'], ['fwd1', 'stepFwd'], ['nextKf', 'skipFwd'], ['zoomOut', 'zoomOut'], ['zoomFit', 'fit'], ['zoomIn', 'zoomIn'], ['skimBtn', 'skim']]) $('#' + id).innerHTML = ICO[k];
+$('#addKf').innerHTML = ICO.plus + 'keyframe';
+$('#listLink').innerHTML = ICO.list + 'list view';
+const COL = {};
+for (const k of ['lon', 'lat', 'play', 'skim', 'sel', 'hist', 'muted', 'ink', 'ink2', 'line2', 'pass', 'review', 'reject', 'na', 'wave', 'wave-neg', 'wavebg', 'waveline', 'thr', 'well', 'mono']) COL[k] = css('--' + k);
+const FONT = '-apple-system, "SF Pro Text", "Apple SD Gothic Neo", sans-serif';
+
+const S = { clip: null, sel: null, pps: 40, t: 0, drag: null, scrub: false, skim: null, skimOn: true, hover: null, fallback: false, staticCv: null, tab: 'windows' };
+const vid = $('#vid'), fb = $('#fb'), cv = $('#cv'), scroller = $('#scroller');
+const api = async (path, body) => {
+  const r = await fetch(path, body ? { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) } : {});
+  const j = await r.json();
+  if (!r.ok || j.error) throw new Error(j.error || r.statusText);
+  return j;
+};
+const toast = msg => { $('#hint').textContent = msg; };
+// images of a window: the 16 window frames, or decision-moment snapshots when those are absent
+const imgsOf = w => w.frames.length ? { urls: w.frames, ts: w.frame_timestamps_us, hist: w.history_frames, snap: false }
+                  : (w.snaps && w.snaps.length) ? { urls: w.snaps, ts: w.snap_timestamps_us, hist: w.snap_history || 4, snap: true } : null;
+// the image closest to the decision moment: the frame nearest the keyframe time, or the last history snapshot
+const kfImage = w => { const im = imgsOf(w); if (!im) return null; if (im.snap) return im.urls[Math.max(0, im.hist - 1)];
+  const kf = w.keyframe.timestamp_us; let bi = 0, bd = Infinity; im.ts.forEach((t, i) => { const d = Math.abs(t - kf); if (d < bd) { bd = d; bi = i; } }); return im.urls[bi]; };
+const fps = () => (S.clip && ((S.clip.video_meta && S.clip.video_meta.fps) || S.clip.clip.fps)) || 30;
+const tcode = t => { t = Math.max(0, t); const h = Math.floor(t / 3600), m = Math.floor(t / 60) % 60, s = Math.floor(t) % 60, f = Math.floor((t - Math.floor(t)) * fps()); return [h, m, s, f].map(v => String(v).padStart(2, '0')).join(':'); };
+const fmtR = t => { const m = Math.floor(t / 60), s = Math.floor(t - m * 60); return `${m}:${s < 10 ? '0' : ''}${s}`; };
+
+// ----------------------------------------------------------------- loading
+async function loadClips() {
+  const clips = await api('/api/clips');
+  const sel = $('#clipSel');
+  sel.innerHTML = clips.map(c => `<option value="${esc(c.clip_id)}">${c.has_video ? '▶ ' : c.has_frames ? '▦ ' : '· '}${esc(c.clip_id.slice(0, 8))} · ${c.n_windows} windows · ${c.n_labels} labels</option>`).join('');
+  sel.onmouseover = () => { sel.dataset.tip = sel.value; };
+  const want = decodeURIComponent((location.hash.match(/clip=([^&]+)/) || [])[1] || '');
+  const first = clips.find(c => c.clip_id === want) || clips.find(c => c.has_video && c.n_windows > 0) || clips.find(c => c.has_frames && c.n_windows > 0) || clips.find(c => c.n_windows > 0) || clips[0];
+  if (!first) { $('#card').innerHTML = '<div class="muted" style="padding:12px">프로젝트에 클립이 없습니다. <code>autolabel add</code> 후 <code>autolabel run</code>을 실행하세요.</div>'; return; }
+  sel.value = first.clip_id;
+  sel.onchange = () => loadClip(sel.value);
+  await loadClip(first.clip_id);
+}
+
+async function loadClip(id) {
+  S.clip = await api('/api/clip/' + encodeURIComponent(id));
+  S.sel = S.clip.windows.length ? 0 : null;
+  S.t = S.clip.windows.length ? S.clip.windows[0].keyframe.timestamp_us / 1e6 : (S.clip.motion ? S.clip.motion.t0 : 0);
+  S.skim = null;
+  location.hash = 'clip=' + encodeURIComponent(id);
+  const c = S.clip.clip, vm = S.clip.video_meta || {};
+  const cam = vm.camera ? vm.camera.replace('camera_', '').replace('_120fov', ' 120°') : null;
+  $('#clipInfo').innerHTML = [
+    `<span>${S.clip.duration_s.toFixed(1)} s</span>`,
+    cam ? `<span>${esc(cam)}</span><span>${vm.width}×${vm.height}${vm.codec ? ' · ' + esc(vm.codec) : ''}</span>` : c.fps ? `<span>${c.width}×${c.height} @ ${c.fps.toFixed(0)} fps</span>` : '<span>no video</span>',
+    `<span class="k" data-tip="자기운동 출처: sensor = 데이터셋 egomotion(미터 단위) · video = optical flow 추정(상대값) · none = 없음">ego-motion:<b>${S.clip.motion ? esc(S.clip.motion.source) : 'none'}</b></span>`].join('');
+  $('#addType').innerHTML = S.clip.vocab.keyframe_types.map(t => `<option>${t}</option>`).join('');
+  S.fallback = !S.clip.video;
+  vid.style.display = S.fallback ? 'none' : ''; fb.style.display = S.fallback ? '' : 'none';
+  const anyFrames = S.clip.windows.some(w => imgsOf(w));
+  $('#note').style.display = S.fallback ? '' : 'none'; $('#note').textContent = anyFrames ? '영상 파일 없음 · 추출된 프레임으로 표시' : '영상·프레임 없음 · fetch-frames --clips <id> --video 로 받으면 표시됨';
+  if (!S.fallback) { vid.src = S.clip.video; vid.currentTime = S.t - tOff(); }
+  $('#tdur').textContent = '/ ' + tcode(duration());
+  fitZoom(); fitLanes(); rebuildStatic(); draw(); renderIndex(); renderCard(); showFallbackFrame(S.t); scrollToPlayhead(true);
+}
+vid.addEventListener('error', () => {
+  if (!S.clip) return;
+  S.fallback = true; vid.style.display = 'none'; fb.style.display = '';
+  $('#note').style.display = ''; $('#note').textContent = '브라우저가 이 코덱을 재생하지 못함 · 추출된 프레임으로 표시 (H.264 mp4 권장)';
+  showFallbackFrame(S.t);
+});
+vid.addEventListener('loadedmetadata', () => { if (!S.fallback) vid.currentTime = S.t - tOff(); });
+
+// ----------------------------------------------------------------- geometry
+const L = { ruler: 22, clip: 72, gap: 8, lane: 56, pad: 12 };
+const duration = () => Math.max(S.clip.duration_s, 1);
+const tEnd = () => tOff() + duration();
+const tOff = () => S.clip.t_offset_s || 0;
+const xOf = t => L.pad + (t - tOff()) * S.pps;
+const tOf = x => (x - L.pad) / S.pps + tOff();
+// overlapping windows are stacked into rows (interval colouring), like connected clips above the storyline;
+// row 0 sits closest to the signal lanes
+function assignRows() {
+  const ends = [];
+  for (const w of [...S.clip.windows].sort((a, b) => a.start_us - b.start_us)) {
+    let r = ends.findIndex(e => e <= w.start_us); if (r < 0) { r = ends.length; ends.push(0); }
+    ends[r] = w.end_us; w._row = r;
+  }
+  S.rows = Math.max(1, ends.length);
+}
+const ROWGAP = 4;
+const clipsH = () => S.rows * (L.clip + ROWGAP) - ROWGAP;
+const yClipRow = r => L.ruler + L.gap + (S.rows - 1 - r) * (L.clip + ROWGAP);
+const rowAt = y => { const k = Math.floor((y - L.ruler - L.gap) / (L.clip + ROWGAP)), r = S.rows - 1 - k; const y0 = yClipRow(r); return (r >= 0 && r < S.rows && y >= y0 && y < y0 + L.clip) ? r : null; };
+const yLane = i => L.ruler + L.gap + clipsH() + L.gap + i * (L.lane + L.gap);
+const totalH = () => yLane(3);
+function fitLanes() { assignRows(); L.clip = S.rows >= 3 ? 58 : 72; const h = scroller.clientHeight || 300; L.lane = Math.max(34, Math.floor((h - L.ruler - clipsH() - L.gap * 4 - 10) / 3)); }
+function fitZoom() { const dur = Math.max(S.clip.duration_s, S.clip.motion ? S.clip.motion.t1 : 0, 1); S.pps = Math.max(20, Math.min(160, (scroller.clientWidth - 2 * L.pad - 24) / dur)); }
+
+// thumbnails drawn inside the clips (loaded lazily; the static layer is rebuilt once they arrive)
+const IMG = new Map(); let rebuildTimer = null;
+const scheduleRebuild = () => { clearTimeout(rebuildTimer); rebuildTimer = setTimeout(() => { if (S.clip) { rebuildStatic(); draw(); } }, 90); };
+function img(url) {
+  let i = IMG.get(url);
+  if (!i) { i = new Image(); i.onload = scheduleRebuild; i.src = url; IMG.set(url, i); }
+  return i.complete && i.naturalWidth ? i : null;
+}
+function rrect(g, x, y, w, h, r) { g.beginPath(); g.moveTo(x + r, y); g.arcTo(x + w, y, x + w, y + h, r); g.arcTo(x + w, y + h, x, y + h, r); g.arcTo(x, y + h, x, y, r); g.arcTo(x, y, x + w, y, r); g.closePath(); }
+
+function rebuildStatic() {
+  assignRows();
+  const W = Math.ceil(xOf(tEnd()) + 40), Hh = Math.max(totalH(), scroller.clientHeight), dpr = window.devicePixelRatio || 1;
+  cv.width = W * dpr; cv.height = Hh * dpr; cv.style.width = W + 'px'; cv.style.height = Hh + 'px';
+  const off = document.createElement('canvas'); off.width = W * dpr; off.height = Hh * dpr;
+  const g = off.getContext('2d'); g.scale(dpr, dpr);
+  g.fillStyle = COL.well; g.fillRect(0, 0, W, Hh);
+  const m = S.clip.motion;
+  // --- ruler
+  g.fillStyle = '#262626'; g.fillRect(0, 0, W, L.ruler);
+  g.fillStyle = '#111'; g.fillRect(0, L.ruler - 1, W, 1);
+  const step = S.pps >= 90 ? 1 : S.pps >= 40 ? 2 : S.pps >= 16 ? 5 : 10, minor = step / 5;
+  g.font = `10px ${COL.mono}`; g.textBaseline = 'alphabetic';
+  for (let t = 0; t <= duration() + 1e-6; t += minor) {
+    const x = Math.round(xOf(t + tOff())) + 0.5, major = Math.abs(t / step - Math.round(t / step)) < 1e-6;
+    g.strokeStyle = major ? '#8a8a8a' : '#4a4a4a'; g.beginPath(); g.moveTo(x, L.ruler - (major ? 9 : 4)); g.lineTo(x, L.ruler - 1); g.stroke();
+    if (major) { g.fillStyle = '#b5b5b5'; g.fillText(fmtR(t), x + 3, 11); }
+  }
+  // dropped candidates as small markers on the ruler
+  for (const c of (m ? m.candidates : [])) {
+    if (c.status === 'kept') continue;
+    const x = Math.round(xOf(c.timestamp_us / 1e6));
+    g.fillStyle = '#8d8d8d'; rrect(g, x - 3, L.ruler - 10, 6, 8, 1.5); g.fill();
+  }
+  // --- signal lanes (connected "audio" lanes)
+  const qtl = (a, q) => { const b = a.map(Math.abs).sort((u, v) => u - v); return b[Math.min(b.length - 1, Math.floor(b.length * q))] || 0; };
+  const clamp = (v, lo, hi) => Math.max(lo, Math.min(hi, v));
+  const T = m ? m.thresholds : null, INF = 1e9;
+  const gA = T ? Math.max(T.gentle_accel, -T.gentle_decel) : 1, gS = T ? T.steer : 1;
+  const lanes = m ? [
+    { arr: m.speed, range: [0, Math.max(qtl(m.speed, 0.98), T.stop_speed * 2) * 1.08], lines: [[T.stop_speed, 'stop']] },
+    { arr: m.ax_smooth, raw: m.ax, sym: true, range: clamp(qtl(m.ax_smooth, 0.9), 1.5 * gA, 3 * gA),
+      lines: [[T.gentle_accel, 'gentle+'], [T.strong_accel, 'strong+'], [T.gentle_decel, 'gentle−'], [T.strong_decel, 'strong−']] },
+    { arr: m.curv, sym: true, range: clamp(qtl(m.curv, 0.95), 2 * gS, T.sharp_steer * 1.15),
+      lines: [[T.steer, 'steer'], [T.sharp_steer, 'sharp'], [-T.steer, ''], [-T.sharp_steer, '']] },
+  ] : [];
+  lanes.forEach((ln, li) => {
+    const y0 = yLane(li), lo = ln.sym ? -ln.range : ln.range[0], hi = ln.sym ? ln.range : ln.range[1];
+    const yOf = v => y0 + 4 + (L.lane - 8) * (1 - (v - lo) / (hi - lo));
+    const xa = xOf(m.t0), xb = xOf(m.t1);
+    g.fillStyle = COL.wavebg; rrect(g, xa, y0, xb - xa, L.lane, 4); g.fill();
+    g.strokeStyle = COL.waveline; g.lineWidth = 1; rrect(g, xa + 0.5, y0 + 0.5, xb - xa - 1, L.lane - 1, 4); g.stroke();
+    g.save(); rrect(g, xa, y0, xb - xa, L.lane, 4); g.clip();
+    const base = ln.sym ? yOf(0) : y0 + L.lane - 4;
+    // waveform-style fill from the baseline, split by sign
+    for (const sign of (ln.sym ? [1, -1] : [1])) {
+      g.fillStyle = sign > 0 ? COL.wave : COL['wave-neg']; g.globalAlpha = 0.85; g.beginPath();
+      let open = false;
+      for (let i = 0; i < ln.arr.length; i++) {
+        const v = ln.sym ? (sign > 0 ? Math.max(0, ln.arr[i]) : Math.min(0, ln.arr[i])) : ln.arr[i];
+        const x = xOf(m.t[i]), y = yOf(v);
+        if (!open || m.t[i] - m.t[i - 1] >= 1.0) { if (open) { g.lineTo(xOf(m.t[i - 1]), base); g.closePath(); } g.moveTo(x, base); g.lineTo(x, y); open = true; }
+        else g.lineTo(x, y);
+      }
+      if (open) { g.lineTo(xOf(m.t[ln.arr.length - 1]), base); g.closePath(); }
+      g.fill(); g.globalAlpha = 1;
+    }
+    if (ln.raw) { g.strokeStyle = 'rgba(255,255,255,.18)'; g.lineWidth = 0.8; g.beginPath(); for (let i = 0; i < ln.raw.length; i++) { const x = xOf(m.t[i]), y = yOf(ln.raw[i]); (i && m.t[i] - m.t[i - 1] < 1.0) ? g.lineTo(x, y) : g.moveTo(x, y); } g.stroke(); }
+    if (ln.sym) { g.strokeStyle = 'rgba(255,255,255,.25)'; g.lineWidth = 1; g.beginPath(); g.moveTo(xa, Math.round(base) + 0.5); g.lineTo(xb, Math.round(base) + 0.5); g.stroke(); }
+    g.font = `9px ${COL.mono}`;
+    ln.lines.forEach(([v, name], k) => { const y = yOf(v); if (y < y0 + 2 || y > y0 + L.lane - 2) return;
+      g.strokeStyle = COL.thr; g.globalAlpha = 0.55; g.setLineDash([3, 3]); g.beginPath(); g.moveTo(xa, Math.round(y) + 0.5); g.lineTo(xb, Math.round(y) + 0.5); g.stroke(); g.setLineDash([]); g.globalAlpha = 1;
+      if (name) { g.fillStyle = COL.thr; g.fillText(name, xb - 44 - (k % 2) * 46, v >= 0 ? y - 2 : y + 9); } });
+    g.restore();
+  });
+  if (!m) { g.fillStyle = COL.muted; g.font = `11px ${FONT}`; g.fillText('no ego-motion for this clip', L.pad + 4, yLane(0) + 16); }
+  // --- clips (windows) in the primary storyline
+  const c = S.clip.clip, ar = c.width && c.height ? c.width / c.height : 16 / 9;
+  for (const w of S.clip.windows) {
+    const col = w.keyframe.category === 'lateral' ? COL.lat : COL.lon;
+    const x0 = Math.round(xOf(w.start_us / 1e6)), xk = Math.round(xOf(w.keyframe.timestamp_us / 1e6)), x1 = Math.round(xOf(w.end_us / 1e6));
+    const y0 = yClipRow(w._row), hdr = 15, foot = 14, th = L.clip - hdr - foot, ty = y0 + hdr;
+    g.fillStyle = '#2b3240'; rrect(g, x0, y0, x1 - x0, L.clip, 5); g.fill();
+    g.save(); rrect(g, x0, y0, x1 - x0, L.clip, 5); g.clip();
+    g.fillStyle = col; g.fillRect(x0, y0, x1 - x0, hdr);
+    g.fillStyle = '#20252e'; g.fillRect(x0, ty, x1 - x0, th);
+    const im = imgsOf(w);
+    if (im) {
+      const tw = Math.max(24, Math.round(th * ar));
+      if (im.snap) {
+        // snapshots only cover ~0.8 s around the decision: one thumbnail at the keyframe, hatch elsewhere
+        g.strokeStyle = 'rgba(255,255,255,.06)'; g.lineWidth = 1; for (let x = x0 - th; x < x1; x += 8) { g.beginPath(); g.moveTo(x, ty + th); g.lineTo(x + th, ty); g.stroke(); }
+        const i = img(im.urls[Math.max(0, im.hist - 1)]); if (i) g.drawImage(i, xk - tw / 2, ty, tw, th);
+      } else {
+        for (let x = x0; x < x1; x += tw) {
+          const tm = tOf(x + tw / 2) * 1e6; let bi = 0, bd = Infinity;
+          im.ts.forEach((ft, i) => { const d = Math.abs(ft - tm); if (d < bd) { bd = d; bi = i; } });
+          const i = img(im.urls[bi]); if (i) g.drawImage(i, x, ty, tw, th); else { g.fillStyle = '#1a1e26'; g.fillRect(x, ty, tw - 1, th); }
+        }
+      }
+    } else { g.fillStyle = '#6c7380'; g.font = `10px ${FONT}`; g.fillText('no frames', x0 + 6, ty + th / 2 + 4); }
+    g.fillStyle = COL.hist; g.fillRect(x0, ty, xk - x0, th);           // history tint
+    g.fillStyle = '#1b2029'; g.fillRect(x0, y0 + L.clip - foot, x1 - x0, foot);
+    // keyframe marker inside the clip
+    g.fillStyle = '#fff'; g.fillRect(xk - 1, ty - 4, 2, th + 4);
+    g.beginPath(); g.moveTo(xk - 5, y0 + 2); g.lineTo(xk + 5, y0 + 2); g.lineTo(xk, y0 + 9); g.closePath(); g.fill();
+    g.fillStyle = '#fff'; g.font = `600 10px ${FONT}`; g.fillText(`#${w.index}  ${w.keyframe.type}`, x0 + 7, y0 + 11);
+    const v = (w.label && w.label.filter && w.label.filter.verdict) || null;
+    g.font = `10px ${FONT}`;
+    if (v) { g.fillStyle = COL[v] || COL.na; g.beginPath(); g.arc(x0 + 9, y0 + L.clip - 7, 3, 0, 7); g.fill(); g.fillStyle = '#c9c9c9'; g.fillText(v + (w.label.review !== 'unreviewed' ? ' · ' + w.label.review : ''), x0 + 16, y0 + L.clip - 4); }
+    else { g.fillStyle = '#8a8a8a'; g.fillText('no label', x0 + 7, y0 + L.clip - 4); }
+    g.restore();
+  }
+  S.staticCv = off;
+}
+
+function draw() {
+  if (!S.clip || !S.staticCv) return;
+  const g = cv.getContext('2d'), dpr = window.devicePixelRatio || 1;
+  g.setTransform(1, 0, 0, 1, 0, 0); g.drawImage(S.staticCv, 0, 0); g.scale(dpr, dpr);
+  const Hh = cv.height / dpr;
+  // selection outline (yellow, like a selected clip)
+  if (S.sel !== null && S.clip.windows[S.sel]) {
+    const w = S.clip.windows[S.sel];
+    const x0 = Math.round(xOf(w.start_us / 1e6)), x1 = Math.round(xOf(w.end_us / 1e6));
+    g.strokeStyle = COL.sel; g.lineWidth = 2; rrect(g, x0 + 1, yClipRow(w._row) + 1, x1 - x0 - 2, L.clip - 2, 5); g.stroke();
+  }
+  // dragged keyframe preview
+  if (S.drag) { const x = xOf(S.drag.t), y = yClipRow(S.drag.w._row); g.strokeStyle = COL.sel; g.setLineDash([4, 3]); g.lineWidth = 1.5; g.beginPath(); g.moveTo(x, y); g.lineTo(x, y + L.clip); g.stroke(); g.setLineDash([]); }
+  // lane labels pinned to the visible left edge
+  const sx = scroller.scrollLeft, src = S.clip.motion ? S.clip.motion.source : '';
+  const units = src === 'video' ? ['rel', 'rel', 'rel'] : ['m/s', 'm/s²', '1/m'];
+  ['SPEED', 'ACCEL', 'CURV'].forEach((n, i) => { const y = yLane(i); g.fillStyle = 'rgba(0,0,0,.55)'; rrect(g, sx + 6, y + 4, 62, 14, 3); g.fill(); g.fillStyle = '#cfcfcf'; g.font = `600 9px ${FONT}`; g.fillText(n, sx + 11, y + 14); g.fillStyle = '#8a8a8a'; g.font = `9px ${COL.mono}`; g.fillText(units[i], sx + 44, y + 14); });
+  // skimmer (red) and playhead (white)
+  if (S.skim !== null) { const x = Math.round(xOf(S.skim)) + 0.5; g.strokeStyle = COL.skim; g.lineWidth = 1; g.beginPath(); g.moveTo(x, 0); g.lineTo(x, Hh); g.stroke(); }
+  const xp = Math.round(xOf(S.t)) + 0.5;
+  g.strokeStyle = 'rgba(0,0,0,.6)'; g.lineWidth = 3; g.beginPath(); g.moveTo(xp, 0); g.lineTo(xp, Hh); g.stroke();
+  g.strokeStyle = COL.play; g.lineWidth = 1; g.beginPath(); g.moveTo(xp, 0); g.lineTo(xp, Hh); g.stroke();
+  g.fillStyle = COL.play; g.beginPath(); g.moveTo(xp - 6, 0); g.lineTo(xp + 6, 0); g.lineTo(xp + 6, 6); g.lineTo(xp, 12); g.lineTo(xp - 6, 6); g.closePath(); g.fill();
+  $('#tcur').textContent = tcode(S.t - tOff());
+}
+function scrollToPlayhead(center) {
+  const x = xOf(S.t) - scroller.scrollLeft;
+  if (center) scroller.scrollLeft = Math.max(0, xOf(S.t) - scroller.clientWidth / 2);
+  else if (x < 40 || x > scroller.clientWidth - 40) scroller.scrollLeft = Math.max(0, xOf(S.t) - 60);
+}
+scroller.addEventListener('scroll', draw);
+
+// ----------------------------------------------------------------- playback
+function seek(t, fromVideo) {
+  S.t = Math.max(tOff(), Math.min(tEnd(), t));
+  if (!fromVideo && !S.fallback && S.skim === null && Math.abs(vid.currentTime + tOff() - S.t) > 0.02) vid.currentTime = S.t - tOff();
+  draw(); showFallbackFrame(S.t); highlightFrame(); updatePathCar(S.t);
+}
+function showFallbackFrame(t) {
+  if (!S.fallback || !S.clip) return;
+  const tus = t * 1e6;
+  const w = (S.sel !== null && S.clip.windows[S.sel] && S.clip.windows[S.sel].start_us <= tus && tus <= S.clip.windows[S.sel].end_us) ? S.clip.windows[S.sel]
+          : S.clip.windows.find(w => w.start_us <= tus && tus <= w.end_us && imgsOf(w));
+  const im = w && imgsOf(w);
+  if (!im) { fb.removeAttribute('src'); fb.alt = '이 구간에는 추출된 프레임이 없음'; return; }
+  let best = 0, bd = Infinity;
+  im.ts.forEach((ft, i) => { const d = Math.abs(ft - tus); if (d < bd) { bd = d; best = i; } });
+  const src = im.urls[Math.min(best, im.urls.length - 1)];
+  if (fb.getAttribute('src') !== src) fb.src = src;
+}
+function highlightFrame() {
+  const w = S.sel !== null && S.clip.windows[S.sel], im = w && imgsOf(w); if (!im) return;
+  const tus = S.t * 1e6; let best = -1, bd = Infinity;
+  if (w.start_us - 2.5e5 <= tus && tus <= w.end_us + 2.5e5) im.ts.forEach((ft, i) => { const d = Math.abs(ft - tus); if (d < bd) { bd = d; best = i; } });
+  if (im.snap && bd > 3e5) best = -1;
+  document.querySelectorAll('.frames img').forEach((el, i) => el.classList.toggle('cur', i === best));
+}
+vid.addEventListener('timeupdate', () => { if (vid.paused && S.skim === null) seek(vid.currentTime + tOff(), true); });
+(function loop() { if (S.clip && !S.fallback && !vid.paused) { seek(vid.currentTime + tOff(), true); scrollToPlayhead(false); } requestAnimationFrame(loop); })();
+function togglePlay() { if (S.fallback || !S.clip) return; S.skim = null; vid.paused ? vid.play() : vid.pause(); }
+vid.addEventListener('play', () => { $('#play').innerHTML = ICO.pause; });
+vid.addEventListener('pause', () => { $('#play').innerHTML = ICO.play; });
+$('#play').onclick = togglePlay;
+$('#prevKf').onclick = () => { if (S.sel !== null && S.sel > 0) selectWindow(S.sel - 1); };
+$('#nextKf').onclick = () => { if (S.sel !== null && S.sel < S.clip.windows.length - 1) selectWindow(S.sel + 1); };
+$('#back1').onclick = () => { seek(S.t - 1); scrollToPlayhead(false); };
+$('#fwd1').onclick = () => { seek(S.t + 1); scrollToPlayhead(false); };
+$('#zoomIn').onclick = () => { S.pps = Math.min(400, S.pps * 1.4); rebuildStatic(); draw(); scrollToPlayhead(true); };
+$('#zoomOut').onclick = () => { S.pps = Math.max(5, S.pps / 1.4); rebuildStatic(); draw(); scrollToPlayhead(true); };
+$('#zoomFit').onclick = () => { fitZoom(); rebuildStatic(); draw(); scrollToPlayhead(true); };
+function setSkim(on) { S.skimOn = on; $('#skimBtn').classList.toggle('on', on); if (!on) endSkim(); }
+$('#skimBtn').onclick = () => setSkim(!S.skimOn);
+setSkim(true);
+
+// ----------------------------------------------------------------- timeline interaction
+const rel = e => { const r = cv.getBoundingClientRect(); return { x: e.clientX - r.left, y: e.clientY - r.top }; };
+const kfHit = (x, y) => {                       // keyframe marker inside a clip of that row, within 7 px
+  const r = rowAt(y); if (r === null) return null;
+  let hit = null, hd = 7;
+  S.clip.windows.forEach((w, i) => { if (w._row !== r) return; const d = Math.abs(xOf(w.keyframe.timestamp_us / 1e6) - x); if (d < hd) { hd = d; hit = i; } });
+  return hit;
+};
+function endSkim() {
+  if (S.skim === null) return;
+  S.skim = null; $('#skimtc').textContent = '';
+  if (!S.fallback && vid.paused) vid.currentTime = S.t - tOff();
+  showFallbackFrame(S.t); draw(); updatePathCar(S.t);
+}
+cv.addEventListener('mousedown', e => {
+  if (!S.clip) return;
+  e.preventDefault();
+  const { x, y } = rel(e);
+  const hit = kfHit(x, y);
+  if (hit !== null) { S.drag = { w: S.clip.windows[hit], t: S.clip.windows[hit].keyframe.timestamp_us / 1e6, t0: S.clip.windows[hit].keyframe.timestamp_us / 1e6 }; selectWindow(hit, false); endSkim(); draw(); return; }
+  const r = rowAt(y);
+  if (r !== null) {
+    const tus = tOf(x) * 1e6;
+    const i = S.clip.windows.findIndex(w => w._row === r && w.start_us <= tus && tus <= w.end_us);
+    if (i >= 0) selectWindow(i, false);
+  }
+  if (!S.fallback && !vid.paused) vid.pause();
+  S.skim = null; $('#skimtc').textContent = '';
+  S.scrub = true;
+  seek(tOf(x));
+});
+window.addEventListener('mousemove', e => {
+  if (!S.clip) return;
+  const { x, y } = rel(e);
+  if (S.scrub) { seek(tOf(x)); return; }
+  if (S.drag) {
+    const lo = tOff() + S.clip.cfg.before_s, hi = tEnd() - S.clip.cfg.after_s;
+    S.drag.t = Math.max(lo, Math.min(hi, tOf(x))); draw();
+    toast(`keyframe #${S.drag.w.index} → ${tcode(S.drag.t - tOff())}  (놓으면 윈도우·프레임 재생성)`);
+    return;
+  }
+  if (e.target !== cv) { endSkim(); return; }
+  cv.style.cursor = kfHit(x, y) !== null ? 'col-resize' : 'crosshair';
+  // dropped candidate markers on the ruler
+  if (y < L.ruler && S.clip.motion) {
+    const c = S.clip.motion.candidates.filter(c => c.status !== 'kept').find(c => Math.abs(xOf(c.timestamp_us / 1e6) - x) < 5);
+    if (c) { if (S.hover !== c) { toast(`탈락 후보 ${tcode(c.timestamp_us / 1e6 - tOff())}  ${c.type} |${c.magnitude.toFixed(2)}|  — ${WHY[c.status]}`); S.hover = c; } }
+    else if (S.hover) { S.hover = null; toast(''); }
+  } else if (S.hover) { S.hover = null; toast(''); }
+  // skimming: the viewer follows the mouse, the playhead stays put
+  if (S.skimOn && (S.fallback || vid.paused)) {
+    const t = Math.max(tOff(), Math.min(tEnd(), tOf(x)));
+    S.skim = t; $('#skimtc').textContent = tcode(t - tOff());
+    if (!S.fallback && Math.abs(vid.currentTime + tOff() - t) > 0.03) vid.currentTime = t - tOff();
+    showFallbackFrame(t); draw(); updatePathCar(t);
+  }
+});
+scroller.addEventListener('mouseleave', endSkim);
+const WHY = { unconfirmed: 'speed confirmation 실패 (속도 변화가 뒤따르지 않음)', cooldown: 'cooldown: 같은 유형이 3 s 안에 반복', window_cap: '8 s 버킷에서 더 강한 이벤트에 밀림', margin: '윈도우가 클립 밖으로 나감' };
+window.addEventListener('mouseup', async () => {
+  if (S.scrub) { S.scrub = false; return; }
+  if (!S.drag) return;
+  const d = S.drag; S.drag = null; draw();
+  if (Math.abs(d.t - d.t0) < 0.05) { toast(''); return; }
+  await editKeyframe({ clip_id: S.clip.clip.clip_id, action: 'update', index: d.w.index, timestamp_us: Math.round(d.t * 1e6) });
+});
+scroller.addEventListener('wheel', e => {
+  if (!(e.ctrlKey || e.metaKey)) return;
+  e.preventDefault();
+  const { x } = rel(e), tAt = tOf(x);
+  S.pps = Math.max(5, Math.min(400, S.pps * (e.deltaY < 0 ? 1.15 : 1 / 1.15)));
+  rebuildStatic(); draw(); scroller.scrollLeft = Math.max(0, xOf(tAt) - x);
+}, { passive: false });
+window.addEventListener('resize', () => { if (S.clip) { fitLanes(); rebuildStatic(); draw(); } });
+// draggable dividers: left/right (index / inspector width) and bottom (timeline height); sizes persist
+(() => {
+  const DEF = { lw: 272, rw: 352 };
+  const LAY = (() => { try { return JSON.parse(localStorage.getItem('al_layout') || '{}'); } catch (e) { return {}; } })();
+  const root = document.documentElement.style, topEl = document.querySelector('.top');
+  const apply = () => { root.setProperty('--lw', (LAY.lw || DEF.lw) + 'px'); root.setProperty('--rw', (LAY.rw || DEF.rw) + 'px'); if (LAY.tlh) root.setProperty('--tl-h', LAY.tlh + 'px'); };
+  const save = () => { try { localStorage.setItem('al_layout', JSON.stringify(LAY)); } catch (e) {} };
+  const refresh = () => { fitLanes(); if (S.clip) { rebuildStatic(); draw(); } };
+  apply();
+  let on = null;
+  const dv = { l: $('#vdivL'), r: $('#vdivR'), b: $('#divider') };
+  const start = k => e => { on = k; dv[k].classList.add('on'); document.body.style.cursor = k === 'b' ? 'row-resize' : 'col-resize'; document.body.style.userSelect = 'none'; e.preventDefault(); };
+  dv.l.addEventListener('mousedown', start('l')); dv.r.addEventListener('mousedown', start('r')); dv.b.addEventListener('mousedown', start('b'));
+  dv.l.addEventListener('dblclick', () => { delete LAY.lw; apply(); save(); refresh(); });
+  dv.r.addEventListener('dblclick', () => { delete LAY.rw; apply(); save(); refresh(); });
+  window.addEventListener('mousemove', e => {
+    if (!on) return;
+    const tr = topEl.getBoundingClientRect(), W = tr.width;
+    if (on === 'l') { LAY.lw = Math.round(Math.max(160, Math.min(W * 0.45, e.clientX - tr.left - 2))); }
+    else if (on === 'r') { LAY.rw = Math.round(Math.max(220, Math.min(W * 0.5, tr.right - e.clientX - 2))); }
+    else { LAY.tlh = Math.round(Math.max(160, Math.min(window.innerHeight - 260, window.innerHeight - e.clientY - 3))); }
+    apply(); refresh();
+  });
+  window.addEventListener('mouseup', () => { if (!on) return; dv[on].classList.remove('on'); on = null; document.body.style.cursor = ''; document.body.style.userSelect = ''; save(); });
+})();
+// shortcut popover
+(() => { const b = $('#keysBtn'), k = $('#keys');
+  const close = () => { k.classList.remove('on'); b.classList.remove('on'); };
+  b.addEventListener('click', e => { e.stopPropagation(); if (k.classList.contains('on')) return close();
+    k.classList.add('on'); b.classList.add('on'); const r = b.getBoundingClientRect(), w = k.offsetWidth, h = k.offsetHeight;
+    k.style.left = Math.max(8, Math.min(window.innerWidth - w - 8, r.right - w)) + 'px';
+    k.style.top = (r.top - h - 8 > 8 ? r.top - h - 8 : r.bottom + 8) + 'px'; });
+  window.addEventListener('mousedown', e => { if (k.classList.contains('on') && !k.contains(e.target)) close(); });
+  window.addEventListener('keydown', e => { if (e.key === 'Escape') close(); });
+})();
+
+// ----------------------------------------------------------------- keyframe edits
+async function editKeyframe(body) {
+  try {
+    toast('윈도우 재생성 중…');
+    const r = await api('/api/keyframe', body);
+    const ws = S.clip.windows;
+    if (body.action === 'delete') { const i = ws.findIndex(w => w.index === body.index); if (i >= 0) ws.splice(i, 1); S.sel = ws.length ? Math.min(i, ws.length - 1) : null; }
+    else { const i = ws.findIndex(w => w.index === r.window.index); if (i >= 0) ws[i] = r.window; else ws.push(r.window); ws.sort((a, b) => a.keyframe.timestamp_us - b.keyframe.timestamp_us); S.sel = ws.findIndex(w => w.index === r.window.index); }
+    rebuildStatic(); draw(); renderIndex(); renderCard(); toast(body.action === 'delete' ? `윈도우 #${body.index} 삭제됨` : `윈도우 #${r.window.index} 갱신됨 (${r.window.keyframe.type} @ ${tcode(r.window.keyframe.timestamp_us / 1e6 - tOff())})`);
+  } catch (err) { toast('실패: ' + err.message); rebuildStatic(); draw(); }
+}
+$('#addKf').onclick = () => editKeyframe({ clip_id: S.clip.clip.clip_id, action: 'add', timestamp_us: Math.round(S.t * 1e6), type: $('#addType').value });
+
+// ----------------------------------------------------------------- index pane
+$('#tabW').onclick = () => { S.tab = 'windows'; renderIndex(); };
+$('#tabC').onclick = () => { S.tab = 'cands'; renderIndex(); };
+function renderIndex() {
+  $('#tabW').classList.toggle('on', S.tab === 'windows'); $('#tabC').classList.toggle('on', S.tab !== 'windows');
+  const el = $('#idx');
+  if (S.tab === 'windows') {
+    const ws = S.clip.windows;
+    el.innerHTML = ws.map((w, i) => { const v = w.label && w.label.filter && w.label.filter.verdict; const col = w.keyframe.category === 'lateral' ? COL.lat : COL.lon;
+      const ki = kfImage(w);
+      return `<div class="row ${i === S.sel ? 'sel' : ''}" style="border-left-color:${col}" onclick="selectWindow(${i})">${ki ? `<img class="th" src="${ki}" alt="">` : '<div class="th none">no frame</div>'}<div><div class="n">#${w.index} ${esc(w.keyframe.type)}</div><div class="m">${v ? v : 'no label'}${w.label ? ' · ' + esc(w.label.review) : ''}</div></div><span class="tc">${tcode(w.keyframe.timestamp_us / 1e6 - tOff())}</span></div>`; }).join('')
+      || '<div class="empty">윈도우 없음. 툴바의 + keyframe으로 재생 위치에 추가하세요.</div>';
+  } else {
+    const cs = (S.clip.motion ? S.clip.motion.candidates : []).filter(c => c.status !== 'kept');
+    el.innerHTML = cs.map(c => `<div class="row cand" onclick="seek(${c.timestamp_us / 1e6}); scrollToPlayhead(true)"><span class="dot" style="background:#8d8d8d"></span><div><div class="n">${esc(c.type)} <span class="m">|${c.magnitude.toFixed(2)}|</span></div><div class="m">${esc(c.status)} · ${esc(WHY[c.status] || '')}</div></div><span class="tc">${tcode(c.timestamp_us / 1e6 - tOff())}</span></div>`).join('')
+      || '<div class="empty">검출기가 버린 후보가 없습니다.</div>';
+  }
+}
+
+// ----------------------------------------------------------------- inspector
+function selectWindow(i, jump = true) {
+  S.sel = i; renderIndex(); renderCard(); draw();
+  if (jump && i !== null) { seek(S.clip.windows[i].keyframe.timestamp_us / 1e6); scrollToPlayhead(true); }
+}
+function pathSvg(w) {
+  const p = w.path; if (!p || p.x.length < 3) return '<div class="muted">no path</div>';
+  const n = p.x.length, xs = p.x.map(v => v - p.x[0]), ys = p.y.map(v => v - p.y[0]);
+  const cum = [0]; for (let i = 1; i < n; i++) cum.push(cum[i - 1] + Math.hypot(xs[i] - xs[i - 1], ys[i] - ys[i - 1]));
+  const tot = cum[n - 1] || 1e-9; let k = cum.findIndex(c => c >= 0.05 * tot); if (k < 1) k = Math.min(3, n - 1);
+  const h = Math.atan2(ys[k], xs[k]), rot = Math.PI / 2 - h, c = Math.cos(rot), s = Math.sin(rot);
+  const X = xs.map((x, i) => c * x - s * ys[i]), Y = ys.map((y, i) => s * xs[i] + c * y);
+  const W = 320, Hh = 150, pad = 14;
+  const minX = Math.min(...X), maxX = Math.max(...X), minY = Math.min(...Y), maxY = Math.max(...Y);
+  const sc = Math.min((W - 2 * pad) / Math.max(maxX - minX, 1e-6), (Hh - 2 * pad) / Math.max(maxY - minY, 1e-6));
+  const px = i => pad + (X[i] - minX) * sc + ((W - 2 * pad) - (maxX - minX) * sc) / 2, py = i => Hh - pad - (Y[i] - minY) * sc - ((Hh - 2 * pad) - (maxY - minY) * sc) / 2;
+  const kfT = w.keyframe.timestamp_us / 1e6; let ki = 0; p.t.forEach((t, i) => { if (Math.abs(t - kfT) < Math.abs(p.t[ki] - kfT)) ki = i; });
+  const pts = (a, b) => Array.from({ length: b - a + 1 }, (_, j) => `${px(a + j).toFixed(1)},${py(a + j).toFixed(1)}`).join(' ');
+  const col = w.keyframe.category === 'lateral' ? COL.lat : COL.lon;
+  const unit = S.clip.motion && S.clip.motion.source === 'video' ? 'rel. units' : 'm';
+  S.pathGeo = { t: p.t, X: X.map((_, i) => px(i)), Y: Y.map((_, i) => py(i)) };
+  return `<svg viewBox="0 0 ${W} ${Hh}">
+    <polyline points="${pts(0, ki)}" fill="none" stroke="#6f86a8" stroke-width="2.5" stroke-linecap="round"/>
+    <polyline points="${pts(ki, n - 1)}" fill="none" stroke="${col}" stroke-width="2.5" stroke-linecap="round"/>
+    <circle cx="${px(0)}" cy="${py(0)}" r="3" fill="#6f86a8"/>
+    <circle cx="${px(ki)}" cy="${py(ki)}" r="4.5" fill="#191919" stroke="#fff" stroke-width="2"/>
+    <circle cx="${px(n - 1)}" cy="${py(n - 1)}" r="3" fill="${col}"/>
+    <g id="pathCar" style="display:none"><path d="M0,-8 L5.5,6 L0,3 L-5.5,6 Z" fill="#fff" stroke="#000" stroke-width="1.2" stroke-linejoin="round"/></g>
+    <text x="8" y="13" font-size="9" font-family="${COL.mono}" fill="#8c8c8c">bird's-eye (${unit}) · up = initial heading</text>
+    <text id="pathCarT" x="${W - 8}" y="13" text-anchor="end" font-size="9" font-family="${COL.mono}" fill="#fff"></text></svg>`;
+}
+// inspector panels: opened from the activity bar (like an IDE), only Label is open by default
+const PANELS = [
+  ['label', 'Label', 'tag', 'CoC 문장 · 결정 칩 · 검수 버튼'],
+  ['kf', 'Keyframe', 'kf', '결정 순간 프레임 · 유형 변경'],
+  ['frames', 'Frames', 'film', '16프레임 (2 Hz)'],
+  ['kin', 'Kinematics', 'chart', 'Δheading · 속도 · 정지 · 횡변위'],
+  ['path', 'Path', 'route', '조감도 경로'],
+];
+Object.assign(ICO, {
+  tag: svg('<path d="M20.6 13.4l-7.2 7.2a2 2 0 0 1-2.8 0L3 13V3h10l7.6 7.6a2 2 0 0 1 0 2.8z"/><circle cx="7.5" cy="7.5" r="1.2" fill="currentColor" stroke="none"/>'),
+  kf: svg('<path d="M12 3l7 9-7 9-7-9z"/><path d="M12 8v8"/>'),
+  film: svg('<rect x="3" y="4" width="18" height="16" rx="2"/><path d="M7 4v16M17 4v16M3 9h4M3 15h4M17 9h4M17 15h4"/>'),
+  chart: svg('<path d="M3 17l5-6 4 4 5-8 4 5"/><path d="M3 21h18"/>'),
+  route: svg('<circle cx="6" cy="19" r="2"/><circle cx="18" cy="5" r="2"/><path d="M8 19h5a4 4 0 0 0 0-8H11a4 4 0 0 1 0-8h5"/>'),
+});
+const OPEN = (() => { try { return Object.assign({ label: true }, JSON.parse(localStorage.getItem('al_panels') || '{}')); } catch (e) { return { label: true }; } })();
+function togglePanel(k) {
+  OPEN[k] = !OPEN[k]; try { localStorage.setItem('al_panels', JSON.stringify(OPEN)); } catch (e) {}
+  S.fresh = OPEN[k] ? k : null;
+  renderAbar(); renderCard();
+  const btn = $('#abar').children[PANELS.findIndex(p => p[0] === k)]; if (btn) { btn.classList.add('pop'); setTimeout(() => btn.classList.remove('pop'), 300); }
+  if (OPEN[k]) { const el = document.querySelector(`.sec[data-key="${k}"]`); if (el) el.scrollIntoView({ block: 'nearest', behavior: 'smooth' }); }
+  S.fresh = null;
+}
+function renderAbar() {
+  $('#abar').innerHTML = PANELS.map(([k, name, ico, desc], i) => `<button class="${OPEN[k] ? 'on' : ''}" onclick="togglePanel('${k}')" data-tip="${name}">${ICO[ico]}</button>`).join('');
+  document.querySelector('.top').classList.toggle('insp-min', !PANELS.some(([k]) => OPEN[k]));
+}
+renderAbar();
+function renderCard() {
+  const card = $('#card'), ws = S.clip.windows;
+  if (S.sel === null || !ws[S.sel]) { $('#inspTitle').textContent = ''; card.innerHTML = '<div class="empty">왼쪽 Index에서 윈도우를 고르거나 타임라인의 클립을 클릭하세요.</div>'; return; }
+  const w = ws[S.sel], l = w.label, f = (l && l.filter) || {}, verdict = f.verdict || 'na', k = w.kinematics || {};
+  const types = S.clip.vocab.keyframe_types.map(t => `<option ${t === w.keyframe.type ? 'selected' : ''}>${t}</option>`).join('');
+  const dec = f.decisions || {};
+  const chips = cat => S.clip.vocab[cat].map(t => `<span class="chip ${cat === 'lateral' ? 'lat' : ''} ${(dec[cat] || []).includes(t) ? 'on' : ''}" data-cat="${cat}" data-term="${esc(t)}" data-tip="${(dec[cat] || []).includes(t) ? '클릭 = 문장에서 제거' : '클릭 = 문장에 넣기 (같은 범주 결정은 치환)'}" onclick="chipClick(this)">${esc(t)}</span>`).join('');
+  const comps = (f.components || []).map(c => `<span class="chip comp">${esc(c)}</span>`).join('');
+  const issues = (f.issues || []).map(i => `<li class="${i.severity}"><b>${i.code}</b> ${esc(i.message)}</li>`).join('');
+  const im = imgsOf(w), kfT = w.keyframe.timestamp_us / 1e6, c = S.clip.clip;
+  const sec = (key, title, right, body) => { if (!OPEN[key]) return ''; const ico = PANELS.find(p => p[0] === key)[2];
+    return `<div class="sec ${S.fresh === key ? 'fresh' : ''}" data-key="${key}"><h4>${ICO[ico]}${title}<span class="r">${right || ''}</span><button class="x" onclick="togglePanel('${key}')" data-tip="닫기">${ICO.x}</button></h4><div class="body">${body}</div></div>`; };
+  $('#inspTitle').textContent = `${tcode(w.start_us / 1e6 - tOff())} – ${tcode(w.end_us / 1e6 - tOff())}`;
+  const open = PANELS.filter(([k]) => OPEN[k]).map(([k]) => k);
+  card.innerHTML = `
+    <div class="title"><span class="badge ${verdict}">${verdict}</span><b>Window #${w.index}</b><span class="m">${tcode(kfT - tOff())}</span></div>
+    ${open.length ? '' : '<div class="empty">오른쪽 툴바에서 패널을 열 수 있습니다: Label, Keyframe, Frames, Kinematics, Path (단축키 1–5).</div>'}
+    ${sec('label', 'Label', l ? `${esc(l.backend)} · ${esc(l.review)}${l.score !== undefined ? '' : ''}` : 'none', `
+      ${l && l.meta && l.meta.window_edited ? '<div class="muted" style="color:var(--review)">window edited → re-check</div>' : ''}
+      <div class="vrow"><span class="cap">Verdict</span><span class="badge ${verdict}">${verdict}</span>${l ? `<span class="muted">score ${f.score}</span>` : ''}</div>
+      <div class="cgrp"><div class="cap"><i style="background:var(--lon)"></i>Longitudinal<span class="n">${(dec.longitudinal || []).length} / 1</span></div><div class="chips">${chips('longitudinal')}</div></div>
+      <div class="cgrp"><div class="cap"><i style="background:var(--lat)"></i>Lateral<span class="n">${(dec.lateral || []).length} / 1</span></div><div class="chips">${chips('lateral')}</div></div>
+      ${comps ? `<div class="cgrp"><div class="cap"><i style="background:#2a3340"></i>Components</div><div class="chips">${comps}</div></div>` : ''}
+      <textarea id="coc" placeholder="CoC 문장" oninput="syncChips()">${esc(l ? l.coc : '')}</textarea>
+      ${issues ? `<ul class="issues">${issues}</ul>` : ''}
+      <div class="seg" style="align-self:flex-start">
+        <button class="ok ${l && l.review === 'approved' ? 'on' : ''}" onclick="review('approved')" ${l ? '' : 'disabled'}>${ICO.check}Approve<kbd>a</kbd></button>
+        <button class="${l && l.review === 'edited' ? 'on' : ''}" onclick="review('edited')" ${l ? '' : 'disabled'}>${ICO.edit}Save<kbd>e</kbd></button>
+        <button class="bad ${l && l.review === 'rejected' ? 'on' : ''}" onclick="review('rejected')" ${l ? '' : 'disabled'}>${ICO.x}Reject<kbd>r</kbd></button>
+      </div>
+      <div style="display:flex; gap:6px; align-items:center; min-width:0">
+        <div class="seg" style="min-width:0"><select id="be" style="min-width:0"><option>rule_based</option><option>gemini</option><option>qwen</option><option>openai</option></select><button onclick="relabel()">${ICO.refresh}${l ? 'Relabel' : 'Label'}</button></div>
+        <span style="flex:1"></span>
+        <button class="flat icon" style="color:var(--reject)" onclick="delWindow()" data-tip="윈도우 삭제">${ICO.trash}</button>
+      </div>`)}
+    ${sec('kf', 'Keyframe', tcode(kfT - tOff()), `
+      ${kfImage(w) ? `<div class="kfimg-wrap" style="--ar:${c.width && c.height ? c.width + '/' + c.height : '16/9'}"><img class="kfimg" src="${kfImage(w)}" alt="" onclick="seek(${kfT}); scrollToPlayhead(true)" data-tip="클릭 = 이 시점으로 이동"><span class="cap">${im && im.snap ? 'snapshot @ t0' : 'frame @ keyframe'} · ${tcode(kfT - tOff())}</span></div>` : ''}
+      <div class="irow"><label>Type</label><div class="v"><div class="seg"><select id="kfType">${types}</select><button onclick="applyType()" data-tip="유형 적용">${ICO.type}적용</button></div></div></div>
+      <div class="irow"><label>Category</label><div class="v">${esc(w.keyframe.category)}</div></div>
+      <div class="irow"><label>Magnitude</label><div class="v mono">${(w.keyframe.magnitude || 0).toFixed(3)}</div></div>`)}
+    ${sec('frames', 'Frames', im ? (im.snap ? 'snapshots' : `${im.urls.length} · 2 Hz`) : 'none', im ? `
+      <div class="muted">${im.snap ? 'D3D 캐시 스냅샷: keyframe 직전 ~0.7 s (1–' + im.hist + ' 4카메라 grid, 이후 전방 망원)' : '1–' + im.hist + ' history (−2 s) · ' + (im.hist + 1) + '–' + im.urls.length + ' future (+6 s) · 클릭 = 이동'}</div>
+      <div class="frames" style="--ar:${c.width && c.height ? c.width + '/' + c.height : '16/9'}">${im.urls.map((src, i) => `<figure><img src="${src}" class="${i < im.hist ? 'h' : ''}" title="${i + 1} · ${tcode(im.ts[i] / 1e6 - tOff())} (kf ${(im.ts[i] / 1e6 - kfT) >= 0 ? '+' : ''}${(im.ts[i] / 1e6 - kfT).toFixed(2)} s)" onclick="seek(${im.ts[i] / 1e6}); scrollToPlayhead(false)" onmouseenter="peek(this)" onmouseleave="unpeek()"><figcaption>${i + 1}</figcaption></figure>`).join('')}</div>` : '<div class="muted">이 윈도우에는 추출된 프레임이 없습니다.</div>')}
+    ${sec('kin', 'Kinematics', '', k.heading_change_deg !== undefined ? `
+      <div class="irow"><label>Δ heading</label><div class="v mono">${k.heading_change_deg.toFixed(1)}°</div></div>
+      <div class="irow"><label>Speed</label><div class="v mono">${k.speed_before.toFixed(2)} → ${k.speed_end.toFixed(2)}  (min ${k.speed_min_future.toFixed(2)})</div></div>
+      <div class="irow"><label>Stopped</label><div class="v mono">${(k.stopped_frac_future * 100).toFixed(0)} % of future</div></div>
+      <div class="irow"><label>Lateral</label><div class="v mono">${k.lateral_offset_m.toFixed(2)} m</div></div>` : '<div class="muted">no kinematics</div>')}
+    ${sec('path', 'Path', '', `<div class="path">${pathSvg(w)}</div>`)}`;
+  highlightFrame(); updatePathCar(S.skim !== null ? S.skim : S.t);
+}
+// live car marker on the bird's-eye path: nearest ego sample to the playhead (or the skimmer), arrow along the travel direction
+function updatePathCar(t) {
+  const g = document.getElementById('pathCar'), geo = S.pathGeo; if (!g || !geo) return;
+  const w = S.sel !== null && S.clip.windows[S.sel]; if (!w) return;
+  const lbl = document.getElementById('pathCarT');
+  if (t < w.start_us / 1e6 - 0.3 || t > w.end_us / 1e6 + 0.3) { g.style.display = 'none'; if (lbl) lbl.textContent = ''; return; }
+  let i = 0, bd = Infinity; geo.t.forEach((tt, k) => { const d = Math.abs(tt - t); if (d < bd) { bd = d; i = k; } });
+  const a = Math.max(0, i - 2), b = Math.min(geo.t.length - 1, i + 2);
+  const dx = geo.X[b] - geo.X[a], dy = geo.Y[b] - geo.Y[a];
+  const ang = (dx || dy) ? Math.atan2(dy, dx) * 180 / Math.PI + 90 : 0;
+  g.setAttribute('transform', `translate(${geo.X[i].toFixed(1)},${geo.Y[i].toFixed(1)}) rotate(${ang.toFixed(1)})`); g.style.display = '';
+  const off = t - w.keyframe.timestamp_us / 1e6;
+  if (lbl) lbl.textContent = `kf ${off >= 0 ? '+' : ''}${off.toFixed(1)} s`;
+}
+// instant tooltips for [data-tip] (native title tooltips are slow and cannot be tuned)
+(() => {
+  const tip = $('#tip'); let cur = null;
+  const show = el => {
+    cur = el; tip.textContent = el.dataset.tip; tip.style.display = 'block';
+    const r = el.getBoundingClientRect(), t = tip.getBoundingClientRect();
+    let x, y;
+    if (el.closest('.abar')) { x = r.left - t.width - 8; y = r.top + r.height / 2 - t.height / 2; }
+    else { x = r.left + r.width / 2 - t.width / 2; y = r.bottom + 6; if (y + t.height > window.innerHeight - 4) y = r.top - t.height - 6; }
+    tip.style.left = Math.max(4, Math.min(window.innerWidth - t.width - 4, x)) + 'px';
+    tip.style.top = Math.max(4, y) + 'px';
+  };
+  const hide = () => { cur = null; tip.style.display = 'none'; };
+  document.addEventListener('mouseover', e => { const el = e.target.closest && e.target.closest('[data-tip]'); if (el && el !== cur) show(el); else if (!el && cur) hide(); });
+  document.addEventListener('mousedown', hide);
+  window.addEventListener('scroll', hide, true);
+})();
+// large preview of a thumbnail, placed over the viewer (left of the inspector) and kept inside the viewport
+function peek(el) {
+  const pk = $('#peek'), im = pk.querySelector('img'), r = el.getBoundingClientRect(), insp = document.querySelector('.pane.right').getBoundingClientRect();
+  const ar = el.closest('.frames').style.getPropertyValue('--ar') || '16/9';
+  pk.style.setProperty('--ar', ar);
+  const pw = Math.min(720, Math.max(360, insp.left - 40));
+  pk.style.setProperty('--pw', pw + 'px');
+  im.src = el.src; pk.querySelector('.cap').textContent = el.title; pk.style.display = 'block';
+  const h = pk.getBoundingClientRect().height;
+  pk.style.left = Math.max(8, insp.left - pw - 24) + 'px';
+  pk.style.top = Math.max(8, Math.min(window.innerHeight - h - 8, r.top + r.height / 2 - h / 2)) + 'px';
+}
+function unpeek() { $('#peek').style.display = 'none'; }
+// --- decision chips are toggles bound to the sentence: on = the term is in the text; click adds / removes it,
+//     and a new decision replaces an existing one of the same category (CoC allows at most one per category)
+const termRe = t => new RegExp(t.replace(/[.*+?^${}()|[\]\\]/g, '\\$&').replace(/\s*&\s*/g, '\\s*(?:&|and)\\s*').replace(/\s*\/\s*/g, '\\s*(?:\\/|or)\\s*').replace(/\s+/g, '\\s+').replace(/-/g, '[- ]'), 'i');
+const findTerm = (text, t) => { const m = termRe(t).exec(text); return m ? { a: m.index, b: m.index + m[0].length } : null; };
+function termsIn(text, cat) { return S.clip.vocab[cat].filter(t => findTerm(text, t)); }
+function syncChips() {
+  const ta = $('#coc'); if (!ta) return;
+  document.querySelectorAll('.chip[data-term]').forEach(c => { const on = !!findTerm(ta.value, c.dataset.term); c.classList.toggle('on', on); c.dataset.tip = on ? '클릭 = 문장에서 제거' : '클릭 = 문장에 넣기 (같은 범주 결정은 치환)'; });
+}
+function removeTerm(text, t) {
+  const r = findTerm(text, t); if (!r) return text;
+  let out = text.slice(0, r.a) + text.slice(r.b);
+  out = out.replace(/\s+and\s+(because|to|in order|,|\.)/i, ' $1')      // "performs X and because" -> "performs because"
+           .replace(/performs\s+and\s+/i, 'performs ').replace(/\s+and\s*$/i, '')
+           .replace(/performs\s+(because|to|,|\.)/i, 'performs $1').replace(/\s{2,}/g, ' ').replace(/\s+([,.])/g, '$1');
+  return out;
+}
+function chipClick(el) {
+  const ta = $('#coc'); if (!ta) return;
+  const t = el.dataset.term, cat = el.dataset.cat; let text = ta.value;
+  if (findTerm(text, t)) { ta.value = removeTerm(text, t); syncChips(); return; }
+  const other = termsIn(text, cat)[0];
+  if (other) { const r = findTerm(text, other); ta.value = text.slice(0, r.a) + t + text.slice(r.b); syncChips(); return; }
+  // no decision of this category yet: slot it into the "performs <lon> and <lat>" clause
+  const oc = cat === 'longitudinal' ? 'lateral' : 'longitudinal', ot = termsIn(text, oc)[0], ro = ot && findTerm(text, ot);
+  if (ro) { ta.value = cat === 'longitudinal' ? text.slice(0, ro.a) + t + ' and ' + text.slice(ro.a) : text.slice(0, ro.b) + ' and ' + t + text.slice(ro.b); }
+  else { const m = /\bperforms\s*/i.exec(text); if (m) { const at = m.index + m[0].length; ta.value = text.slice(0, at) + t + (/^\s*(because|to|,|\.)/i.test(text.slice(at)) ? ' ' : ' ') + text.slice(at).replace(/^\s+/, ''); }
+         else if (!text.trim()) ta.value = `The vehicle performs ${t} because `; else ta.value = text.replace(/\s*$/, '') + ' ' + t; }
+  syncChips();
+}
+function insertText(t) { const ta = $('#coc'); if (!ta) return; const a = ta.selectionStart, b = ta.selectionEnd; ta.value = ta.value.slice(0, a) + t + ta.value.slice(b); ta.focus(); ta.selectionStart = ta.selectionEnd = a + t.length; }
+async function review(kind) {
+  const w = S.clip.windows[S.sel]; if (!w || !w.label) return;
+  try { const r = await api('/api/review', { clip_id: w.clip_id, index: w.index, review: kind, coc: $('#coc').value });
+    if (r.ok) { w.label = { ...w.label, ...r.label }; delete w.label.raw; rebuildStatic(); draw(); renderIndex(); renderCard(); toast(`#${w.index} ${w.label.review}`); } }
+  catch (err) { toast('실패: ' + err.message); }
+}
+async function relabel() {
+  const w = S.clip.windows[S.sel]; if (!w) return;
+  try { toast(`${$('#be').value} 백엔드로 라벨 생성 중…`);
+    const r = await api('/api/label_one', { clip_id: w.clip_id, index: w.index, backend: $('#be').value });
+    w.label = r.label; rebuildStatic(); draw(); renderIndex(); renderCard(); toast(`#${w.index} 라벨 생성됨 (${r.label.filter.verdict})`); }
+  catch (err) { toast('실패: ' + err.message); }
+}
+function applyType() { const w = S.clip.windows[S.sel]; if (!w) return; editKeyframe({ clip_id: w.clip_id, action: 'update', index: w.index, type: $('#kfType').value }); }
+function delWindow() { const w = S.clip.windows[S.sel]; if (!w) return; if (!confirm(`윈도우 #${w.index} (${w.keyframe.type})와 라벨을 삭제할까요?`)) return; editKeyframe({ clip_id: w.clip_id, action: 'delete', index: w.index }); }
+
+// ----------------------------------------------------------------- keyboard
+window.addEventListener('keydown', e => {
+  if (!S.clip || ['TEXTAREA', 'INPUT', 'SELECT'].includes(document.activeElement.tagName)) return;
+  const st = e.shiftKey ? 1 : 1 / fps();
+  if (e.code === 'Space') { e.preventDefault(); togglePlay(); }
+  else if (e.key === 'ArrowLeft') { endSkim(); seek(S.t - st); scrollToPlayhead(false); }
+  else if (e.key === 'ArrowRight') { endSkim(); seek(S.t + st); scrollToPlayhead(false); }
+  else if (e.key === 'Home') { seek(tOff()); scrollToPlayhead(true); }
+  else if (e.key === 'End') { seek(tEnd()); scrollToPlayhead(true); }
+  else if (e.key === '[' && S.sel !== null && S.sel > 0) selectWindow(S.sel - 1);
+  else if (e.key === ']' && S.sel !== null && S.sel < S.clip.windows.length - 1) selectWindow(S.sel + 1);
+  else if (e.key === 's') setSkim(!S.skimOn);
+  else if (/^[1-5]$/.test(e.key) && PANELS[+e.key - 1]) togglePanel(PANELS[+e.key - 1][0]);
+  else if (e.key === 'a') review('approved'); else if (e.key === 'e') review('edited'); else if (e.key === 'r') review('rejected');
+});
+loadClips().catch(err => { $('#card').innerHTML = `<div class="muted" style="padding:12px">load failed: ${esc(err.message)}</div>`; });
+</script>
+</body>
+</html>

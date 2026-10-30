@@ -1,4 +1,4 @@
-"""Hand-drawn (matplotlib) diagrams for the report: system architecture and window layout."""
+"""Hand-drawn (matplotlib) diagrams for the report: system architecture, window layout, filter flow."""
 from __future__ import annotations
 
 from pathlib import Path
@@ -12,88 +12,88 @@ from matplotlib.patches import FancyArrowPatch, FancyBboxPatch
 FIGS = Path(__file__).resolve().parents[1] / "report" / "figures"
 FIGS.mkdir(parents=True, exist_ok=True)
 plt.rcParams.update({"font.family": "Helvetica", "font.size": 8, "savefig.dpi": 200, "savefig.bbox": "tight"})
-BLUE, ORANGE, GREEN, RED, GREY = "#1f2937", "#1f2937", "#1f2937", "#b45309", "#6b7280"   # monochrome boxes, one accent
-NAVY = "#2f4f7f"
+DARK, GREY, ACCENT, NAVY = "#1f2937", "#6b7280", "#b45309", "#2f4f7f"
 
 
-def box(ax, x, y, w, h, title, sub="", color=BLUE, fc="#ffffff"):
+def box(ax, x, y, w, h, title, sub="", color=DARK, fc="#ffffff", tsize=8.5, ssize=6.5):
     ax.add_patch(FancyBboxPatch((x, y), w, h, boxstyle="round,pad=0.02,rounding_size=0.08", ec=color, fc=fc, lw=1.4))
-    ax.text(x + w / 2, y + h * 0.66, title, ha="center", va="center", fontsize=8.5, fontweight="bold", color="#111827")
+    ty = y + h * (0.68 if sub else 0.5)
+    ax.text(x + w / 2, ty, title, ha="center", va="center", fontsize=tsize, fontweight="bold", color="#111827")
     if sub:
-        ax.text(x + w / 2, y + h * 0.3, sub, ha="center", va="center", fontsize=6.5, color=GREY)
+        ax.text(x + w / 2, y + h * 0.3, sub, ha="center", va="center", fontsize=ssize, color=GREY, linespacing=1.25)
 
 
 def arrow(ax, x0, y0, x1, y1, color="#374151"):
-    ax.add_patch(FancyArrowPatch((x0, y0), (x1, y1), arrowstyle="-|>", mutation_scale=10, color=color, lw=1.1))
+    ax.add_patch(FancyArrowPatch((x0, y0), (x1, y1), arrowstyle="-|>", mutation_scale=10, color=color, lw=1.1, shrinkA=0, shrinkB=0))
 
 
 def architecture():
-    fig, ax = plt.subplots(figsize=(7.2, 3.6))
-    ax.set_xlim(0, 10); ax.set_ylim(0, 5); ax.axis("off")
-    # inputs
-    box(ax, 0.2, 3.6, 1.7, 1.0, "Input", "video (mp4/mov)\nGPS/IMU csv (opt.)", GREY, "#f3f4f6")
-    box(ax, 0.2, 2.1, 1.7, 1.0, "Dataset import", "physical_ai_av /\nD3D jsonl", GREY, "#f3f4f6")
-    # stages
-    box(ax, 2.5, 3.6, 1.6, 1.0, "1 Motion", "optical flow -> speed,\nyaw proxies", BLUE)
-    box(ax, 4.5, 3.6, 1.6, 1.0, "2 Keyframes", "ax / curvature\ntransitions + caps", BLUE)
-    box(ax, 6.5, 3.6, 1.6, 1.0, "3 Windows", "[-2s, +6s], 16 frames\n@ 2 Hz, sheet.jpg", BLUE)
-    box(ax, 6.5, 2.1, 1.6, 1.0, "4 Backend", "rule / Gemini /\nQwen3-VL + LoRA", ORANGE)
-    box(ax, 4.5, 2.1, 1.6, 1.0, "5 Filter", "S structural, T type,\nK kinematic", ORANGE)
-    box(ax, 2.5, 2.1, 1.6, 1.0, "6 Review UI", "approve / edit /\nreject in browser", GREEN)
-    box(ax, 2.5, 0.5, 1.6, 1.0, "7 Export", "coc_results.jsonl\nsamples.jsonl + frames", GREEN)
-    box(ax, 4.5, 0.5, 1.6, 1.0, "8 Evaluate", "decision-F1,\nROUGE-L, BLEU", GREEN)
-    box(ax, 6.5, 0.5, 1.6, 1.0, "9 Train", "Qwen3-VL + LoRA\n+ decision head", RED, "#fff7ed")
-    # arrows
-    arrow(ax, 1.9, 4.1, 2.5, 4.1); arrow(ax, 4.1, 4.1, 4.5, 4.1); arrow(ax, 6.1, 4.1, 6.5, 4.1)
-    arrow(ax, 7.3, 3.6, 7.3, 3.1)                 # windows -> backend
-    arrow(ax, 6.5, 2.6, 6.1, 2.6); arrow(ax, 4.5, 2.6, 4.1, 2.6)
-    arrow(ax, 3.3, 2.1, 3.3, 1.5)                 # review -> export
-    # imported windows skip stages 1-2 and enter at stage 3
-    ax.plot([1.9, 2.2, 2.2, 7.3], [2.6, 2.6, 3.35, 3.35], color="#374151", lw=1.1)
-    arrow(ax, 7.3, 3.35, 7.3, 3.6)
-    ax.text(4.6, 3.42, "imported windows (skip 1-2)", fontsize=6.3, color=GREY, ha="center")
-    arrow(ax, 4.1, 1.0, 4.5, 1.0); arrow(ax, 6.1, 1.0, 6.5, 1.0)
-    arrow(ax, 8.1, 1.0, 9.0, 1.0); ax.text(9.05, 1.0, "adapter\nweights", fontsize=6.5, va="center", color=RED)
-    arrow(ax, 9.3, 1.4, 9.3, 2.6); arrow(ax, 9.3, 2.6, 8.1, 2.6)
-    # workspace
-    ax.text(0.2, 1.62, "Project workspace", fontsize=7.5, fontweight="bold", color=GREY)
-    ax.text(0.2, 0.2, "clips.jsonl  motion/*.json\nwindows.jsonl  labels.jsonl\nframes/**/*.jpg  exports/", fontsize=6.3, color=GREY, va="bottom", linespacing=1.5)
+    fig, ax = plt.subplots(figsize=(7.6, 4.0))
+    ax.set_xlim(0, 11); ax.set_ylim(0, 5.6); ax.axis("off")
+    W, H = 1.9, 1.05
+    xs = [2.6, 5.0, 7.4]
+    box(ax, 0.2, 4.2, 1.9, H, "Input", "video (mp4/mov)\nGPS/IMU csv (optional)", GREY, "#f3f4f6")
+    box(ax, xs[0], 4.2, W, H, "1 Motion", "optical flow ->\nspeed / yaw proxies")
+    box(ax, xs[1], 4.2, W, H, "2 Keyframes", "ax / curvature\ntransitions + caps")
+    box(ax, xs[2], 4.2, W, H, "3 Windows", "[-2 s, +6 s], 16 frames\n@ 2 Hz + contact sheet")
+    box(ax, 0.2, 2.5, 1.9, H, "Dataset import", "physical_ai_av windows\n+ Gemini labels", GREY, "#f3f4f6")
+    box(ax, xs[2], 2.5, W, H, "4 Backend", "rule / Gemini /\nQwen3-VL (+LoRA)")
+    box(ax, xs[1], 2.5, W, H, "5 Filter", "S structural, T type,\nK kinematic, H head")
+    box(ax, xs[0], 2.5, W, H, "6 Review UI", "approve / edit / reject\nin the browser")
+    box(ax, xs[0], 0.8, W, H, "7 Export", "coc_results.jsonl\nsamples.jsonl + frames")
+    box(ax, xs[1], 0.8, W, H, "8 Evaluate", "decision-F1, Jaccard,\nROUGE-L, BLEU vs GT")
+    box(ax, xs[2], 0.8, W, H, "9 Train", "Qwen3-VL + LoRA\n+ decision head", ACCENT, "#fff7ed")
+    arrow(ax, 2.1, 4.72, xs[0], 4.72); arrow(ax, xs[0] + W, 4.72, xs[1], 4.72); arrow(ax, xs[1] + W, 4.72, xs[2], 4.72)
+    arrow(ax, xs[2] + W / 2, 4.2, xs[2] + W / 2, 3.55)
+    arrow(ax, xs[2], 3.02, xs[1] + W, 3.02); arrow(ax, xs[1], 3.02, xs[0] + W, 3.02)
+    arrow(ax, xs[0] + W / 2, 2.5, xs[0] + W / 2, 1.85)
+    arrow(ax, xs[0] + W, 1.32, xs[1], 1.32); arrow(ax, xs[1] + W, 1.32, xs[2], 1.32)
+    # imported windows: run through the free corridor between rows 1 and 2, enter stage 3 from below
+    ax.plot([2.1, 2.35, 2.35, xs[2] + 0.35, xs[2] + 0.35], [3.02, 3.02, 3.85, 3.85, 3.85], color="#374151", lw=1.1)
+    arrow(ax, xs[2] + 0.35, 3.85, xs[2] + 0.35, 4.2)
+    ax.text(4.9, 3.93, "imported windows enter at stage 3", fontsize=6.3, color=GREY, ha="center", va="bottom")
+    # adapter loop: train -> backend
+    ax.plot([xs[2] + W, 10.3, 10.3], [1.32, 1.32, 3.02], color="#374151", lw=1.1)
+    arrow(ax, 10.3, 3.02, xs[2] + W, 3.02)
+    ax.text(10.35, 2.2, "LoRA adapter\n+ head", fontsize=6.5, color=ACCENT, va="center", ha="left")
+    ax.text(0.2, 1.75, "Project workspace", fontsize=7.5, fontweight="bold", color=GREY)
+    ax.text(0.2, 1.5, "clips.jsonl\nmotion/*.json\nwindows.jsonl\nframes/**/*.jpg\nlabels*.jsonl\nexports/", fontsize=6.3, color=GREY, va="top", linespacing=1.35)
     fig.savefig(FIGS / "fig_architecture.png"); plt.close(fig)
 
 
 def window_layout():
-    fig, ax = plt.subplots(figsize=(7.2, 1.7))
-    ax.set_xlim(-2.6, 6.6); ax.set_ylim(0, 2.2); ax.axis("off")
+    fig, ax = plt.subplots(figsize=(7.2, 1.9))
+    ax.set_xlim(-2.7, 6.7); ax.set_ylim(0, 2.6); ax.axis("off")
     ax.add_patch(FancyBboxPatch((-2, 0.9), 2, 0.7, boxstyle="square,pad=0", fc="#e5e7eb", ec=GREY))
     ax.add_patch(FancyBboxPatch((0, 0.9), 6, 0.7, boxstyle="square,pad=0", fc="#f9fafb", ec=GREY))
     for i in range(16):
         t = -2 + i * 8 / 15
         ax.plot([t, t], [0.9, 1.6], color="#ffffff", lw=0.8)
-        ax.text(t, 0.72, str(i + 1), ha="center", fontsize=6, color=GREY)
-    ax.plot([0, 0], [0.6, 1.9], color=RED, lw=1.4, ls="--")
-    ax.text(0, 1.95, "keyframe (decision)", ha="center", fontsize=7.5, color=RED)
-    ax.text(-1, 1.25, "Stage I  history  (frames 1-4)", ha="center", fontsize=7.5, color="#1f2937")
-    ax.text(3, 1.25, "Stage II  outcome  (frames 5-16)", ha="center", fontsize=7.5, color="#1f2937")
-    ax.text(-2, 0.35, "-2 s", ha="center", fontsize=7); ax.text(6, 0.35, "+6 s", ha="center", fontsize=7); ax.text(0, 0.35, "0", ha="center", fontsize=7)
-    ax.text(-2.5, 0.05, "Ego-motion sampled at 10 Hz over the same window (81 samples) feeds the kinematic checks.", fontsize=6.5, color=GREY)
+        ax.text(t, 1.25, str(i + 1), ha="center", va="center", fontsize=6.5, color=DARK)
+    ax.plot([0, 0], [0.55, 1.95], color=ACCENT, lw=1.4, ls="--")
+    ax.text(0, 2.35, "keyframe (decision, t = 0)", ha="center", fontsize=7.5, color=ACCENT)
+    ax.text(-0.2, 1.78, "Stage I: history, frames 1-4", ha="right", fontsize=7.2, color=DARK)
+    ax.text(0.2, 1.78, "Stage II: outcome, frames 5-16", ha="left", fontsize=7.2, color=DARK)
+    ax.text(-2, 0.45, "-2 s", ha="center", fontsize=7, color=GREY); ax.text(6, 0.45, "+6 s", ha="center", fontsize=7, color=GREY)
+    ax.text(-2.65, 0.05, "16 frames at 2 Hz; ego-motion at 10 Hz (81 samples) over the same window feeds the kinematic checks.", fontsize=6.5, color=GREY)
     fig.savefig(FIGS / "fig_window.png"); plt.close(fig)
 
 
 def filter_flow():
-    fig, ax = plt.subplots(figsize=(7.2, 2.2))
-    ax.set_xlim(0, 10); ax.set_ylim(0, 3); ax.axis("off")
-    box(ax, 0.2, 1.0, 1.5, 1.0, "CoC text", "from backend", GREY, "#f9fafb")
-    box(ax, 2.1, 1.0, 1.8, 1.0, "Extract", "decisions (Table 1)\ncomponents (Table 2)", BLUE)
-    box(ax, 4.3, 2.0, 1.7, 0.85, "S checks", "form, vocab, hedging,\ncontradiction, dup", ORANGE)
-    box(ax, 4.3, 1.05, 1.7, 0.85, "T checks", "vs keyframe type", ORANGE)
-    box(ax, 4.3, 0.1, 1.7, 0.85, "K checks", "vs ego kinematics\n(stop/turn/lane/speed)", ORANGE)
-    box(ax, 6.5, 1.0, 1.6, 1.0, "Verdict", "error->reject\nwarning->review", GREEN)
-    box(ax, 8.4, 1.0, 1.4, 1.0, "Review UI", "human in the loop", GREEN)
-    arrow(ax, 1.7, 1.5, 2.1, 1.5)
-    for y in (2.42, 1.47, 0.52):
-        arrow(ax, 3.9, 1.5, 4.3, y); arrow(ax, 6.0, y, 6.5, 1.5)
-    arrow(ax, 8.1, 1.5, 8.4, 1.5)
-    ax.text(2.1, 0.3, "history / intent mentions ignored\n(\"after stopping...\", \"prepare for a turn\")", fontsize=6.3, color=GREY)
+    fig, ax = plt.subplots(figsize=(7.2, 2.8))
+    ax.set_xlim(0, 10.2); ax.set_ylim(0, 3.7); ax.axis("off")
+    box(ax, 0.2, 1.35, 1.5, 1.0, "CoC text", "from backend", GREY, "#f9fafb")
+    box(ax, 2.0, 1.35, 1.9, 1.0, "Extract", "decisions (Table 1)\ncomponents (Table 2)")
+    box(ax, 4.3, 2.55, 2.2, 0.95, "S checks", "form, vocabulary, hedging,\ncontradiction, duplicates", ssize=6.2)
+    box(ax, 4.3, 1.38, 2.2, 0.95, "T checks", "vs keyframe type", ssize=6.2)
+    box(ax, 4.3, 0.2, 2.2, 0.95, "K / H checks", "vs ego kinematics\nvs decision head", ssize=6.2)
+    box(ax, 6.9, 1.35, 1.5, 1.0, "Verdict", "error -> reject\nwarning -> review")
+    box(ax, 8.7, 1.35, 1.3, 1.0, "Review UI", "human in\nthe loop")
+    arrow(ax, 1.7, 1.85, 2.0, 1.85)
+    for y in (3.02, 1.85, 0.68):
+        arrow(ax, 3.9, 1.85, 4.3, y); arrow(ax, 6.5, y, 6.9, 1.85)
+    arrow(ax, 8.4, 1.85, 8.7, 1.85)
+    ax.text(2.05, 1.05, "history / intent mentions are ignored\n(\"after stopping at ...\",\n\"prepare for a turn\")", fontsize=6.2, color=GREY, ha="center", va="top", linespacing=1.3)
     fig.savefig(FIGS / "fig_filter_flow.png"); plt.close(fig)
 
 

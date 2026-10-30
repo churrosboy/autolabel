@@ -1,0 +1,21 @@
+{
+ "file": "phone dashcam video (handheld), 1080x1920 @30fps",
+ "duration_s": 79.8,
+ "motion_seconds": 17.1,
+ "samples": 798,
+ "windows_detected": 20,
+ "keyframe_types": {
+  "strong_decel": 7,
+  "sharp_steer_l": 5,
+  "steer_l": 3,
+  "strong_accel": 2,
+  "sharp_steer_r": 1,
+  "gentle_accel": 1,
+  "steer_r": 1
+ },
+ "verdicts": {
+  "pass": 17,
+  "review": 2,
+  "reject": 1
+ }
+}

@@ -30,7 +30,7 @@ from .backends import LabelBackend, get_backend
 from .filters import FilterConfig, QualityFilter, summarize_reports
 from .keyframes import KeyframeConfig, detect_keyframes, uniform_keyframes
 from .motion import estimate_from_video, load_sensor_csv, probe_video
-from .schemas import Clip, EgoMotion, Label, Window
+from .schemas import Clip, EgoMotion, Keyframe, Label, Window
 from .sources import read_jsonl, write_jsonl
 from .windows import FrameReader, extract_window_frames, make_windows
 
@@ -155,6 +155,25 @@ class Project:
                 out.append(self.add_video(p, **kw))
         return out
 
+    @property
+    def video_dir(self) -> Path:
+        return self.root / "video"
+
+    def video_for(self, clip_id: str) -> Optional[tuple[Path, dict]]:
+        """Playable video for a clip, if any: the registered input file, or a dataset
+        video dropped into video/<clip_id>.mp4 (optionally with video/<clip_id>.video.json:
+        ``t0_us`` = clip time at playback position 0, ``duration_s``, camera/codec info)."""
+        clip = next((c for c in self.clips() if c.clip_id == clip_id), None)
+        if clip and clip.path and Path(clip.path).exists():
+            return Path(clip.path), {"t0_us": 0, "duration_s": clip.duration_s}
+        for ext in (".mp4", ".webm", ".mov"):
+            p = self.video_dir / f"{clip_id}{ext}"
+            if p.exists():
+                side = self.video_dir / f"{clip_id}.video.json"
+                meta = json.loads(side.read_text()) if side.exists() else {}
+                return p, meta
+        return None
+
     # ------------------------------------------------------------------ motion
     def motion_path(self, clip_id: str) -> Path:
         return self.motion_dir / f"{clip_id}.json"
@@ -236,6 +255,83 @@ class Project:
             cur[(w.clip_id, w.index)] = w
         write_jsonl(self.windows_path, (w.to_dict(include_ego=True) for w in cur.values()))
 
+    def edit_window(
+        self,
+        clip_id: str,
+        action: str,
+        index: Optional[int] = None,
+        timestamp_us: Optional[int] = None,
+        type: Optional[str] = None,
+        extract_frames: bool = True,
+    ) -> Optional[Window]:
+        """Add / update / delete one decision window by hand (timeline UI).
+
+        ``update`` moves the keyframe and/or changes its type; the window, its ego
+        slice and frames are rebuilt.  An existing label keeps its text but is
+        re-filtered and sent back to ``unreviewed`` with ``meta.window_edited``.
+        """
+        from .vocab import KEYFRAME_CATEGORY
+
+        wins = self.windows()
+        labels = self.labels()
+        same = lambda o: o.clip_id == clip_id and o.index == index  # noqa: E731
+        if action == "delete":
+            if index is None:
+                raise ValueError("index required")
+            wins = [w for w in wins if not same(w)]
+            labels = [l for l in labels if not same(l)]
+            shutil.rmtree(self.frames_dir / clip_id / f"kf{index:03d}", ignore_errors=True)
+            write_jsonl(self.windows_path, (w.to_dict(include_ego=True) for w in wins))
+            self.save_labels(labels)
+            return None
+
+        ego = self.load_motion(clip_id)
+        if ego is None:
+            raise ValueError(f"no ego-motion for clip {clip_id}")
+        if action == "add":
+            if timestamp_us is None:
+                raise ValueError("timestamp_us required")
+            index = max([w.index for w in wins if w.clip_id == clip_id], default=-1) + 1
+            typ = type or "go_straight"
+            kf = Keyframe(int(timestamp_us), typ, 0.0, KEYFRAME_CATEGORY.get(typ, "longitudinal"))
+        elif action == "update":
+            cur = next((w for w in wins if same(w)), None)
+            if cur is None:
+                raise KeyError(f"window {clip_id}#{index} not found")
+            typ = type or cur.keyframe.type
+            kf = Keyframe(int(timestamp_us if timestamp_us is not None else cur.keyframe.timestamp_us), typ,
+                          cur.keyframe.magnitude, KEYFRAME_CATEGORY.get(typ, "longitudinal"))
+        else:
+            raise ValueError(f"unknown action {action!r}")
+
+        new = make_windows(clip_id, ego, [kf], self.cfg.before_s, self.cfg.after_s, self.cfg.n_frames, self.cfg.history_frames)
+        if not new:
+            raise ValueError("window would fall outside the clip")
+        w = new[0]
+        w.index = index
+        clip = next((c for c in self.clips() if c.clip_id == clip_id), None)
+        if extract_frames and clip is not None and clip.path:
+            extract_window_frames(clip.path, w, self.frames_dir, max_side=self.cfg.frame_max_side)
+        pos = next((i for i, o in enumerate(wins) if same(o)), None)
+        if pos is None:
+            wins.append(w)
+        else:
+            wins[pos] = w
+        write_jsonl(self.windows_path, (o.to_dict(include_ego=True) for o in wins))
+
+        hit = next((l for l in labels if same(l)), None)
+        if hit is not None:
+            hit.keyframe_type = w.keyframe_type
+            hit.keyframe_timestamp_us = kf.timestamp_us
+            hit.first_frame_timestamp_us = w.frame_timestamps_us[0] if w.frame_timestamps_us else w.start_us
+            hit.review = "unreviewed"
+            hit.meta["window_edited"] = True
+            sib = [l.coc for l in labels if l.clip_id == clip_id and l is not hit]
+            qf = QualityFilter(FilterConfig(**self.cfg.filter))
+            hit.filter = qf.check(hit.coc, w.keyframe_type, w, siblings=sib, head=hit.meta.get("head_decisions")).to_dict()
+            self.save_labels(labels)
+        return w
+
     def window_frames(self, w: Window) -> list[np.ndarray]:
         d = self.frames_dir / w.clip_id / f"kf{w.index:03d}"
         if not d.exists():
@@ -266,7 +362,10 @@ class Project:
         progress=None,
         run_filter: bool = True,
         backend_kwargs: Optional[dict] = None,
+        only: Optional[Iterable[tuple[str, int]]] = None,
     ) -> list[Label]:
+        """Generate labels for every window (or just the ``only`` (clip_id, index) keys)."""
+        only = set(only) if only is not None else None
         be = get_backend(backend, **(backend_kwargs or {})) if isinstance(backend, str) else backend
         labels = {(l.clip_id, l.index): l for l in self.labels()}
         qf = QualityFilter(FilterConfig(**self.cfg.filter)) if run_filter else None
@@ -274,6 +373,8 @@ class Project:
         windows = self.windows()
         for w in windows:
             key = (w.clip_id, w.index)
+            if only is not None and key not in only:
+                continue
             if key in labels and not force and labels[key].backend == be.name:
                 continue
             if limit and n_done >= limit:

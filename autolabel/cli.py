@@ -5,11 +5,11 @@
     autolabel run   PROJECT [--backend rule_based|gemini|qwen|openai] [--force] [--limit N]
     autolabel label PROJECT --backend ...            (labels only)
     autolabel filter PROJECT
-    autolabel review PROJECT [--port 8765]           (browser UI)
+    autolabel review PROJECT [--port 8765] [--page timeline|list]   (browser UI)
     autolabel export PROJECT [--name dataset] [--reviewed-only]
     autolabel eval  PROJECT [--gt coc_results_pro.jsonl] [--labels labels_qwen.jsonl]
-    autolabel import-d3d PROJECT --ego ego_motion_results.jsonl --coc coc_results_pro.jsonl
-    autolabel fetch-frames PROJECT [--layout grid|front]       (physical_ai_av, needs HF_TOKEN)
+    autolabel import-d3d PROJECT --ego ego_motion_results.jsonl --coc coc_results_pro.jsonl [--as-labels]
+    autolabel fetch-frames PROJECT [--layout grid|front] [--clips ID.. --video]   (physical_ai_av, needs HF_TOKEN)
     autolabel train PROJECT --out runs/qwen2b [--base-model ...] (LoRA + decision head)
     autolabel stats PROJECT
 """
@@ -69,7 +69,7 @@ def cmd_filter(args):
 def cmd_review(args):
     from .ui.server import serve
 
-    serve(_p(args), port=args.port, open_browser=not args.no_browser)
+    serve(_p(args), port=args.port, open_browser=not args.no_browser, page=args.page)
 
 
 def cmd_export(args):
@@ -90,12 +90,32 @@ def cmd_import_d3d(args):
     if gt:
         (p.root / "gt.json").write_text(json.dumps({f"{k[0]}#{k[1]}": v for k, v in gt.items()}, ensure_ascii=False, indent=1))
     print(f"imported {len(wins)} windows, {len(gt)} GT labels")
+    if gt and args.as_labels:
+        # expose the dataset's CoC as a label set (backend "gemini") so it can be filtered / reviewed in the UI
+        from .schemas import Label
+
+        existing = {(l.clip_id, l.index): l for l in p.labels()}
+        for w in wins:
+            coc = gt.get((w.clip_id, w.index))
+            if coc and (w.clip_id, w.index) not in existing:
+                existing[(w.clip_id, w.index)] = Label(w.clip_id, w.index, w.keyframe_type, w.frame_timestamps_us[0] if w.frame_timestamps_us else w.start_us,
+                                                       w.keyframe.timestamp_us, coc, backend="gemini")
+        p.save_labels(existing.values())
+        rep = p.run_filter()
+        print(f"labels: {len(existing)} ({rep.get('verdicts')})")
 
 
 def cmd_fetch_frames(args):
     from .training.fetch_frames import fetch
 
-    print(json.dumps(fetch(args.project, args.layout, args.limit, args.force), indent=2))
+    out = fetch(args.project, args.layout, args.limit, args.force, clips=args.clips)
+    if args.video:
+        from .training.fetch_frames import fetch_video
+
+        if not args.clips:
+            raise SystemExit("--video needs --clips")
+        out["video"] = fetch_video(args.project, args.clips, args.camera, force=args.force)
+    print(json.dumps(out, indent=2))
 
 
 def cmd_train(args):
@@ -143,12 +163,12 @@ def build_parser() -> argparse.ArgumentParser:
         s.add_argument("--labels", help="labels file name inside the project (default labels.jsonl)")
         s.add_argument("--force", action="store_true"); s.add_argument("--limit", type=int); s.add_argument("--no-frames", action="store_true"); s.set_defaults(fn=fn)
     s = sub.add_parser("filter"); s.add_argument("project"); s.add_argument("--labels"); s.set_defaults(fn=cmd_filter)
-    s = sub.add_parser("review"); s.add_argument("project"); s.add_argument("--port", type=int, default=8765); s.add_argument("--no-browser", action="store_true"); s.set_defaults(fn=cmd_review)
+    s = sub.add_parser("review"); s.add_argument("project"); s.add_argument("--port", type=int, default=8765); s.add_argument("--no-browser", action="store_true"); s.add_argument("--page", choices=["timeline", "list"], default="timeline", help="page to open first"); s.set_defaults(fn=cmd_review)
     s = sub.add_parser("export"); s.add_argument("project"); s.add_argument("--labels"); s.add_argument("--name", default="dataset"); s.add_argument("--reviewed-only", action="store_true"); s.set_defaults(fn=cmd_export)
     s = sub.add_parser("stats"); s.add_argument("project"); s.set_defaults(fn=cmd_stats)
-    s = sub.add_parser("import-d3d"); s.add_argument("project"); s.add_argument("--ego", required=True); s.add_argument("--coc"); s.add_argument("--limit", type=int); s.set_defaults(fn=cmd_import_d3d)
+    s = sub.add_parser("import-d3d"); s.add_argument("project"); s.add_argument("--ego", required=True); s.add_argument("--coc"); s.add_argument("--limit", type=int); s.add_argument("--as-labels", action="store_true", help="also register the dataset CoC as labels (backend=gemini) and run the filter"); s.set_defaults(fn=cmd_import_d3d)
     s = sub.add_parser("eval"); s.add_argument("project"); s.add_argument("--gt"); s.add_argument("--labels"); s.add_argument("--save", help="write full metrics JSON here"); s.set_defaults(fn=cmd_eval)
-    s = sub.add_parser("fetch-frames"); s.add_argument("project"); s.add_argument("--layout", choices=["grid", "front"], default="grid"); s.add_argument("--limit", type=int); s.add_argument("--force", action="store_true"); s.set_defaults(fn=cmd_fetch_frames)
+    s = sub.add_parser("fetch-frames"); s.add_argument("project"); s.add_argument("--layout", choices=["grid", "front"], default="grid"); s.add_argument("--limit", type=int); s.add_argument("--force", action="store_true"); s.add_argument("--clips", nargs="+"); s.add_argument("--video", action="store_true"); s.add_argument("--camera", choices=["front_wide", "front_tele", "cross_left", "cross_right"], default="front_wide"); s.set_defaults(fn=cmd_fetch_frames)
     s = sub.add_parser("train"); s.add_argument("project"); s.add_argument("--out", required=True); s.set_defaults(fn=cmd_train, train_args=[])  # args after "--" go to autolabel.training.train
     return ap
 

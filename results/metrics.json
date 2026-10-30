@@ -170,7 +170,7 @@
    "S03": 1,
    "S12": 1
   },
-  "seconds": 0.225,
+  "seconds": 0.228,
   "per_type": {
    "gentle_decel": {
     "pass": 258,
@@ -435,7 +435,7 @@
     "n": 29
    }
   },
-  "seconds_per_label": 0.0008382566726010148
+  "seconds_per_label": 0.0008482472014032016
  },
  "E5_filter_rule_based": {
   "n": 724,
@@ -446,22 +446,32 @@
   },
   "issue_codes": {
    "T03": 4,
-   "T05": 1,
-   "T01": 1
+   "T01": 1,
+   "T05": 1
   }
  },
  "E4_video_real": {
-  "file": "IMG_1416.mov (1080x1920 @30fps, 18.7 s)",
-  "motion_seconds_measured": 4.6,
-  "samples": 187,
-  "keyframes": [
-   {
-    "timestamp_us": 7098104,
-    "type": "strong_decel",
-    "magnitude": 3.6708145329750685,
-    "category": "longitudinal"
-   }
-  ]
+  "file": "phone dashcam video (handheld), 1080x1920 @30fps",
+  "duration_s": 79.8,
+  "motion_seconds": 17.1,
+  "samples": 798,
+  "windows_detected": 20,
+  "keyframe_types": {
+   "strong_decel": 7,
+   "sharp_steer_l": 5,
+   "steer_l": 3,
+   "strong_accel": 2,
+   "sharp_steer_r": 1,
+   "gentle_accel": 1,
+   "steer_r": 1
+  },
+  "verdicts": {
+   "pass": 17,
+   "review": 2,
+   "reject": 1
+  },
+  "keyframes_detected_here": 20,
+  "realtime_factor": 4.7
  },
  "E4_video_synthetic": {
   "duration_s": 24.0,
@@ -470,10 +480,10 @@
    240,
    160
   ],
-  "motion_seconds": 1.18,
+  "motion_seconds": 1.16,
   "keyframe_and_frames_seconds": 0.07,
-  "label_seconds": 0.003,
-  "realtime_factor": 20.4,
+  "label_seconds": 0.002,
+  "realtime_factor": 20.7,
   "samples": 239,
   "keyframes": [
    {
@@ -500,10 +510,51 @@
    "reject": 1
   },
   "export": {
-   "export_dir": "/var/folders/r_/t9yly4td7f79qp_r2_895zv00000gn/T/tmpv1agmk_c/proj/exports/ds",
+   "export_dir": "/var/folders/r_/t9yly4td7f79qp_r2_895zv00000gn/T/tmpyx9dq8bg/proj/exports/ds",
    "kept": 2,
    "dropped": 1,
    "clips": 1
+  }
+ },
+ "E6_finetune": {
+  "rule_based (val)": {
+   "decision_f1": 0.5868965517241382,
+   "decision_precision": 0.5551724137931034,
+   "decision_recall": 0.6620689655172414,
+   "lon_match": 0.5862068965517241,
+   "lat_match": 0.4896551724137931,
+   "component_jaccard": 0.5390804597701149,
+   "rouge_l": 0.2082062337078141,
+   "bleu4": 0.077482332214076,
+   "filter_pass_rate": 1.0,
+   "filter_reject_rate": 0.0,
+   "n": 145
+  },
+  "qwen_zeroshot (val)": {
+   "decision_f1": 0.11151067323481116,
+   "decision_precision": 0.11172413793103447,
+   "decision_recall": 0.11954022988505748,
+   "lon_match": 0.14482758620689656,
+   "lat_match": 0.2896551724137931,
+   "component_jaccard": 0.4589655172413793,
+   "rouge_l": 0.15045727009685508,
+   "bleu4": 0.04807612398211406,
+   "filter_pass_rate": 0.18620689655172415,
+   "filter_reject_rate": 0.46206896551724136,
+   "n": 145
+  },
+  "qwen_lora (val)": {
+   "decision_f1": 0.6324137931034483,
+   "decision_precision": 0.671264367816092,
+   "decision_recall": 0.6229885057471264,
+   "lon_match": 0.6758620689655173,
+   "lat_match": 0.6137931034482759,
+   "component_jaccard": 0.6343678160919539,
+   "rouge_l": 0.40233739020415127,
+   "bleu4": 0.23901009363495046,
+   "filter_pass_rate": 1.0,
+   "filter_reject_rate": 0.0,
+   "n": 145
   }
  }
 }

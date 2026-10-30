@@ -185,3 +185,45 @@ def relabel_lateral_side(kf: Keyframe, ego: EgoMotion, cfg: KeyframeConfig) -> K
     side = "l" if float(np.mean(seg.curvatures)) > 0 else "r"
     base = "sharp_steer" if kf.type.startswith("sharp") else "steer"
     return replace(kf, type=f"{base}_{side}")
+
+
+def explain_keyframes(ego: EgoMotion, cfg: KeyframeConfig | None = None) -> list[dict]:
+    """Every raw transition the detector looked at, with why it was kept or dropped.
+
+    ``status`` is one of ``kept`` (became a keyframe), ``unconfirmed`` (speed trace
+    did not confirm the accel/decel), ``cooldown`` (same type too soon after another),
+    ``window_cap`` (lost to a stronger event in the same 8 s bucket) or ``margin``
+    (its window would leave the clip).  Used by the timeline UI.
+    """
+    cfg = cfg or KeyframeConfig.for_source(ego.source)
+    if ego.n < 5:
+        return []
+    dt = ego.time_step_s
+    t0 = int(ego.timestamps_us[0] + cfg.start_offset_s * 1e6)
+    m = ego.timestamps_us >= t0
+    ts = ego.timestamps_us[m]
+    if len(ts) < 5:
+        return []
+    ax, speed, curv = ego.ax[m], ego.speed[m], ego.curvatures[m]
+    lat = _detect_lateral(ts, curv, cfg, dt)
+    raw = _detect_longitudinal(ts, ax, speed, replace(cfg, confirm_with_speed=False), dt) + lat
+    confirmed = set(_detect_longitudinal(ts, ax, speed, cfg, dt) + lat)
+    after_cd = set(filter_cooldown(list(confirmed), int(cfg.cooldown_s * 1e6)))
+    after_cap = set(filter_per_window(list(after_cd), int(cfg.window_s * 1e6))) if cfg.per_window_cap else after_cd
+    lo = int(ego.timestamps_us[0] + cfg.before_s * 1e6)
+    hi = int(ego.timestamps_us[-1] - cfg.after_s * 1e6)
+    out = []
+    for k in sorted(set(raw), key=lambda k: k[0]):
+        if k not in confirmed:
+            status = "unconfirmed"
+        elif k not in after_cd:
+            status = "cooldown"
+        elif k not in after_cap:
+            status = "window_cap"
+        elif not lo <= k[0] <= hi:
+            status = "margin"
+        else:
+            status = "kept"
+        out.append({"timestamp_us": int(k[0]), "type": k[1], "magnitude": float(k[2]),
+                    "category": KEYFRAME_CATEGORY.get(k[1], "longitudinal"), "status": status})
+    return out
